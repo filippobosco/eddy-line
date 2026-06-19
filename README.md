@@ -43,8 +43,8 @@ lead, non li inoltra), l'embed Calendly mostra un messaggio di fallback.
 
 ## Da completare (TODO)
 
-- [ ] Sticky CTA mobile (§7.14)
-- [ ] Cookie banner Consent Mode v2 — i default `denied` sono già attivi, manca il banner UI (§9.4)
+- [x] Sticky CTA mobile (§7.14)
+- [x] Cookie banner Consent Mode v2 — Accetta/Rifiuta/Preferenze (§9.4)
 - [ ] Sezione "Come arrivare" + mappa (§7.12)
 - [ ] Loghi enti reali CONI/FICK/FIRAFT/FICT (ora badge testuali)
 - [ ] Riempire le variabili d'ambiente sopra

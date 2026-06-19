@@ -20,6 +20,8 @@ import Recensioni from './Recensioni.astro';
 import Faq from './Faq.astro';
 import BookingBlock from './BookingBlock.astro';
 import Footer from './Footer.astro';
+import StickyCta from './StickyCta.astro';
+import CookieBanner from './CookieBanner.astro';
 import ChoiceModal from './ChoiceModal.astro';
 import ActivitySwap from './ActivitySwap.astro';
 import type { Activity } from '../data/content';
@@ -53,6 +55,8 @@ const { title, description } = meta[activity];
 <BaseLayout title={title} description={description} activity={activity}>
   <Header slot="header" activity={activity} />
   <Footer slot="footer" />
+  <StickyCta slot="sticky" />
+  <CookieBanner slot="cookie" />
 
   <Hero activity={activity} />
   <TrustStrip />
