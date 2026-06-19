@@ -1,0 +1,101 @@
+---
+/**
+ * Landing — composizione dello stesso layout per le tre route (§5.2).
+ * rafting.astro / canyoning.astro passano `activity`; index.astro è 'neutral'.
+ *
+ * PRIMO BLOCCO: Header + Hero (3 stati) + Trust strip.
+ * Le sezioni successive (card selector, percorsi, prenotazione, ecc.) si
+ * aggiungono nei giri successivi.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from './Header.astro';
+import Hero from './Hero.astro';
+import TrustStrip from './TrustStrip.astro';
+import PercheEddyline from './PercheEddyline.astro';
+import ActivitySwitcher from './ActivitySwitcher.astro';
+import Esperienza from './Esperienza.astro';
+import Percorsi from './Percorsi.astro';
+import Sicurezza from './Sicurezza.astro';
+import Recensioni from './Recensioni.astro';
+import Faq from './Faq.astro';
+import BookingBlock from './BookingBlock.astro';
+import Footer from './Footer.astro';
+import ChoiceModal from './ChoiceModal.astro';
+import ActivitySwap from './ActivitySwap.astro';
+import type { Activity } from '../data/content';
+
+interface Props {
+  activity: Activity | 'neutral';
+}
+const { activity } = Astro.props;
+
+// Title/description per stato attività (§10)
+const meta: Record<Activity | 'neutral', { title: string; description: string }> = {
+  neutral: {
+    title: 'Eddyline — Rafting e Canyoning sul fiume Sesia, in Valsesia',
+    description:
+      'Avventura sull’acqua con guide certificate, attrezzatura inclusa e massima sicurezza. A 2 ore da Milano e Torino, ai piedi del Monte Rosa.',
+  },
+  rafting: {
+    title: 'Rafting in Valsesia sul fiume Sesia — Eddyline',
+    description:
+      'Discesa di rafting tra rapide e acque smeraldo, adatta a tutti. Guide certificate FiRaft, attrezzatura inclusa. A 2 ore da Milano e Torino.',
+  },
+  canyoning: {
+    title: 'Canyoning in Valsesia — Eddyline',
+    description:
+      'Salti, scivoli e calate tra le forre del Sesia. 9 percorsi per ogni livello, guide certificate AIGC, muta e attrezzatura incluse.',
+  },
+};
+const { title, description } = meta[activity];
+---
+
+<BaseLayout title={title} description={description} activity={activity}>
+  <Header slot="header" activity={activity} />
+  <Footer slot="footer" />
+
+  <Hero activity={activity} />
+  <TrustStrip />
+
+  <!-- Selettore a card: swap senza reload (§7.5) -->
+  <ActivitySwitcher activity={activity} />
+
+  <!-- Permanente (§7.4) -->
+  <PercheEddyline />
+
+  <!-- Attività: pannelli rafting/canyoning commutati dal controller -->
+  <Esperienza activity={activity} />
+  <Percorsi activity={activity} />
+
+  <!-- Permanenti: fiducia e prova sociale (§7.8 / §7.9) -->
+  <Sicurezza />
+  <Recensioni />
+
+  <!-- Cuore conversione: Calendly + form (§7.11 / §9) -->
+  <BookingBlock activity={activity} />
+
+  <!-- FAQ dopo il form (richiesta Angela): mobile + desktop (§7.10) -->
+  <Faq />
+
+  <!-- Controller swap client-side (§5.3/§5.5) -->
+  <ActivitySwap />
+
+  <!-- Pop-up di scelta bloccante: solo su / (stato neutro) -->
+  {activity === 'neutral' && <ChoiceModal />}
+</BaseLayout>
+
+<script>
+  /**
+   * §5.2 fallback — supporta ?attivita=rafting|canyoning anche su / .
+   * Se l'utente atterra su "/" con il query param, lo reindirizziamo alla
+   * route pulita corrispondente (message-match coerente per il paid).
+   * Lo swap client-side senza reload dalle card arriverà nel prossimo giro.
+   */
+  (function () {
+    if (location.pathname !== '/') return;
+    const param = new URLSearchParams(location.search).get('attivita');
+    if (param === 'rafting' || param === 'canyoning') {
+      location.replace('/' + param);
+    }
+  })();
+</script>

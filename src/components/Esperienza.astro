@@ -1,0 +1,114 @@
+---
+/**
+ * L'esperienza (§7.6) — attività.
+ * Renderizza ENTRAMBE le varianti; il controller activitySwap mostra quella
+ * dell'attività attiva via [data-activity-pane]. Nello stato neutro mostriamo
+ * rafting come default visivo (il blocco resta coerente finché non si sceglie).
+ */
+import { esperienza } from '../data/content';
+import type { Activity } from '../data/content';
+import CurrentLine from './CurrentLine.astro';
+
+interface Props {
+  activity: Activity | 'neutral';
+}
+const { activity } = Astro.props;
+const initial: Activity = activity === 'canyoning' ? 'canyoning' : 'rafting';
+
+const steps: Record<Activity, string[]> = {
+  rafting: [
+    'Briefing a secco',
+    'Prova di acquaticità',
+    '3h30 sul fiume',
+    'Sosta tuffi dal trampolino di roccia',
+  ],
+  canyoning: ['Salti', 'Scivoli naturali', 'Nuotate in pozze cristalline', 'Calate in corda'],
+};
+const activities: Activity[] = ['rafting', 'canyoning'];
+---
+
+<section class="esp section" id="esperienza" aria-labelledby="esp-title">
+  <div class="container">
+    {
+      activities.map((act) => (
+        <div data-activity-pane={act} hidden={act !== initial}>
+          <div class="esp__grid reveal">
+            <div class="esp__text">
+              <p class="eyebrow">L’ESPERIENZA</p>
+              <h2 class="esp__title" id={act === initial ? 'esp-title' : undefined}>
+                {esperienza[act].title}
+              </h2>
+              <CurrentLine variant="underline" class="esp__underline" />
+              <p class="esp__body">{esperienza[act].body}</p>
+            </div>
+            <ol class="esp__steps" aria-label="Come si svolge">
+              {steps[act].map((s, i) => (
+                <li class="esp__step">
+                  <span class="esp__num tag-mono">{String(i + 1).padStart(2, '0')}</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .esp {
+    background: var(--foam-soft);
+  }
+  .esp__grid {
+    display: grid;
+    gap: 2rem;
+    align-items: start;
+  }
+  .esp__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+  }
+  .esp__body {
+    margin-top: 1rem;
+    color: var(--text-mute);
+    font-size: var(--step-1);
+    max-width: 46ch;
+  }
+
+  .esp__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .esp__step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    padding: 0.95rem 1.2rem;
+    box-shadow: var(--shadow-sm);
+    font-weight: 500;
+  }
+  .esp__num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.4rem;
+    height: 2.4rem;
+    border-radius: var(--radius-sm);
+    background: var(--sesia-deep);
+    color: var(--foam);
+    font-size: 0.9rem;
+  }
+
+  @media (min-width: 860px) {
+    .esp__grid {
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 3.5rem;
+    }
+  }
+</style>

@@ -1,0 +1,218 @@
+---
+/**
+ * Form "Richiedi informazioni" (§9.2).
+ * Reso una volta per attività (rafting/canyoning) così il campo Attività è
+ * pre-compilato (hidden/readonly). Validazione client-side + honeypot +
+ * time-trap; submit JSON a /api/lead (che inoltra a n8n server-side).
+ * Stati successo/errore inline. Voce coerente: errori chiari, non scuse.
+ */
+import type { Activity } from '../data/content';
+import { canyoningGroups } from '../data/content';
+
+interface Props {
+  activity: Activity;
+}
+const { activity } = Astro.props;
+const idp = `f-${activity}`; // prefisso id univoco per attività
+
+// Opzioni "Percorso o livello" coerenti con l'attività.
+const percorsoOptions =
+  activity === 'rafting'
+    ? ['Classico', 'Gole del Sesia', 'Non so, consigliatemi']
+    : [
+        ...canyoningGroups.flatMap((g) => g.routes.map((r) => `${r.name} (${g.level.split(' ')[0]})`)),
+        'Non so, consigliatemi',
+      ];
+---
+
+<form class="lead" data-lead-form data-activity={activity} novalidate>
+  <!-- Attività pre-compilata, readonly per l'utente ma inviata -->
+  <input type="hidden" name="attivita" value={activity} />
+
+  <!-- Honeypot: nascosto agli umani, riempito dai bot -->
+  <div class="lead__hp" aria-hidden="true">
+    <label>
+      Non compilare questo campo
+      <input type="text" name="website" tabindex="-1" autocomplete="off" />
+    </label>
+  </div>
+
+  <div class="lead__row">
+    <div class="lead__field">
+      <label for={`${idp}-nome`}>Nome e cognome <span aria-hidden="true">*</span></label>
+      <input id={`${idp}-nome`} name="nome" type="text" autocomplete="name" required />
+      <p class="lead__err" data-err-for="nome" hidden></p>
+    </div>
+  </div>
+
+  <div class="lead__row lead__row--2">
+    <div class="lead__field">
+      <label for={`${idp}-email`}>Email <span aria-hidden="true">*</span></label>
+      <input id={`${idp}-email`} name="email" type="email" autocomplete="email" required />
+      <p class="lead__err" data-err-for="email" hidden></p>
+    </div>
+    <div class="lead__field">
+      <label for={`${idp}-tel`}>Telefono <span aria-hidden="true">*</span></label>
+      <input id={`${idp}-tel`} name="telefono" type="tel" autocomplete="tel" required />
+      <p class="lead__err" data-err-for="telefono" hidden></p>
+    </div>
+  </div>
+
+  <div class="lead__row lead__row--2">
+    <div class="lead__field">
+      <label for={`${idp}-perc`}>
+        {activity === 'rafting' ? 'Percorso preferito' : 'Percorso o livello'}
+        <span class="lead__opt">(opzionale)</span>
+      </label>
+      <select id={`${idp}-perc`} name="percorso">
+        <option value="">— Scegli —</option>
+        {percorsoOptions.map((o) => <option value={o}>{o}</option>)}
+      </select>
+    </div>
+    <div class="lead__field">
+      <label for={`${idp}-persone`}>N. persone <span class="lead__opt">(opzionale)</span></label>
+      <input id={`${idp}-persone`} name="persone" type="text" inputmode="numeric" placeholder="es. 4 adulti, 2 minori" />
+    </div>
+  </div>
+
+  <div class="lead__row lead__row--2">
+    <div class="lead__field">
+      <label for={`${idp}-data`}>Data preferita <span class="lead__opt">(opzionale)</span></label>
+      <input id={`${idp}-data`} name="data" type="date" />
+    </div>
+  </div>
+
+  <div class="lead__row">
+    <div class="lead__field">
+      <label for={`${idp}-msg`}>Messaggio <span class="lead__opt">(opzionale)</span></label>
+      <textarea id={`${idp}-msg`} name="messaggio" rows="3" placeholder="Dicci tutto quello che ci serve sapere"></textarea>
+    </div>
+  </div>
+
+  <div class="lead__row">
+    <label class="lead__checkbox">
+      <input type="checkbox" name="privacy" required />
+      <span>
+        Ho letto e accetto la
+        <a href="https://eddyline.it/privacy-cookies/" target="_blank" rel="noopener">privacy policy</a>.
+        <span aria-hidden="true">*</span>
+      </span>
+    </label>
+    <p class="lead__err" data-err-for="privacy" hidden></p>
+  </div>
+
+  <button type="submit" class="btn btn-primary lead__submit">Invia la richiesta</button>
+
+  <!-- Stati inline -->
+  <p class="lead__status lead__status--ok" data-lead-ok hidden role="status">
+    Richiesta inviata. Ti ricontattiamo al più presto.
+  </p>
+  <p class="lead__status lead__status--err" data-lead-error hidden role="alert"></p>
+</form>
+
+<style>
+  .lead {
+    display: grid;
+    gap: 1rem;
+  }
+  .lead__hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .lead__row--2 {
+    display: grid;
+    gap: 1rem;
+  }
+  .lead__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .lead__field label {
+    font-weight: 600;
+    font-size: var(--step--1);
+    color: var(--text);
+  }
+  .lead__opt {
+    font-weight: 400;
+    color: var(--text-mute);
+  }
+  .lead input,
+  .lead select,
+  .lead textarea {
+    font-family: var(--font-body);
+    font-size: var(--step-0);
+    color: var(--text);
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.7rem 0.85rem;
+    width: 100%;
+    transition: border-color var(--dur-fast) var(--ease-out);
+  }
+  .lead input:focus,
+  .lead select:focus,
+  .lead textarea:focus {
+    border-color: var(--sesia-bright);
+  }
+  .lead [aria-invalid='true'] {
+    border-color: var(--rescue);
+  }
+  .lead textarea {
+    resize: vertical;
+  }
+
+  .lead__checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: var(--step--1);
+    color: var(--text-mute);
+    cursor: pointer;
+  }
+  .lead__checkbox input {
+    width: auto;
+    margin-top: 0.15rem;
+    accent-color: var(--sesia-deep);
+  }
+  .lead__checkbox a {
+    color: var(--sesia-deep);
+    text-decoration: underline;
+  }
+
+  .lead__err {
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--rescue);
+    font-weight: 500;
+  }
+
+  .lead__submit {
+    justify-self: start;
+    margin-top: 0.25rem;
+  }
+
+  .lead__status {
+    margin: 0;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+  }
+  .lead__status--ok {
+    background: var(--sesia-bright-15);
+    color: var(--sesia-deep);
+  }
+  .lead__status--err {
+    background: var(--rescue-12);
+    color: var(--rescue-dark);
+  }
+
+  @media (min-width: 560px) {
+    .lead__row--2 {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

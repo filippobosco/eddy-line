@@ -1,0 +1,179 @@
+---
+import '../styles/global.css';
+import config from '../config';
+import type { Activity } from '../data/content';
+
+/**
+ * Shell del layout (§4). Permanente in tutte le modalità.
+ * - lang="it", noindex/nofollow (landing paid — §10)
+ * - Consent Mode v2 default DENIED + GTM consent-aware (§9.4)
+ * - Font Google con preconnect + preload display (§10)
+ * - dataLayer init con activity_selected all'ingresso (§5.5)
+ */
+interface Props {
+  title: string;
+  description: string;
+  /** Stato d'ingresso: 'neutral' su /, o l'attività pre-selezionata. */
+  activity: Activity | 'neutral';
+}
+
+const { title, description, activity } = Astro.props;
+const { gtmContainerId } = config.integrations;
+const { siteUrl } = config.site;
+const initialActivity = activity === 'neutral' ? 'rafting' : activity;
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- §10 — landing paid: niente indicizzazione -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content="it_IT" />
+    <meta property="og:url" content={siteUrl} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={siteUrl} />
+
+    <!-- Font Google: preconnect + preload del display (§10) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=Spline+Sans+Mono:wght@500&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600&family=Spline+Sans+Mono:wght@500&display=swap"
+    />
+
+    <!-- §9.4 — Consent Mode v2: default DENIED prima di tutto -->
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      window.gtag = gtag;
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        analytics_storage: 'denied',
+        wait_for_update: 500,
+      });
+    </script>
+
+    <!-- §5.5 — activity_selected all'ingresso -->
+    <script is:inline define:vars={{ initialActivity }}>
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: 'activity_selected', activity: initialActivity });
+    </script>
+
+    <!-- §9.3 — GTM consent-aware (caricato dopo i default consent) -->
+    <script is:inline define:vars={{ gtmContainerId }}>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        if (f && f.parentNode) f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', gtmContainerId);
+    </script>
+  </head>
+
+  <body>
+    <!-- GTM noscript -->
+    <noscript>
+      <iframe
+        src={`https://www.googletagmanager.com/ns.html?id=${gtmContainerId}`}
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+        title="gtm"></iframe>
+    </noscript>
+
+    <a class="skip-link" href="#main">Salta al contenuto</a>
+
+    <slot name="header" />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <slot name="footer" />
+    <slot name="sticky" />
+    <slot name="cookie" />
+
+    <!-- Orchestrazione motion leggera: reveal + disegno linea allo scroll (§6.6) -->
+    <script is:inline>
+      (function () {
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce || !('IntersectionObserver' in window)) {
+          document.querySelectorAll('.reveal').forEach(function (el) {
+            el.classList.add('is-visible');
+          });
+          document.querySelectorAll('.draw-on-scroll').forEach(function (el) {
+            el.classList.add('is-drawn');
+          });
+          return;
+        }
+
+        // Imposta la lunghezza reale dei path per il disegno
+        document.querySelectorAll('.draw-on-scroll path').forEach(function (p) {
+          try {
+            var len = Math.ceil(p.getTotalLength());
+            p.parentElement.style.setProperty('--len', len);
+          } catch (e) {}
+        });
+
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible', 'is-drawn');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.18, rootMargin: '0px 0px -8% 0px' }
+        );
+
+        document.querySelectorAll('.reveal, .draw-on-scroll').forEach(function (el) {
+          io.observe(el);
+        });
+      })();
+    </script>
+
+    <!-- §9.3 — eventi contatto: whatsapp_click / call_click (header + footer) -->
+    <script is:inline>
+      (function () {
+        document.addEventListener(
+          'click',
+          function (e) {
+            var el = e.target && e.target.closest ? e.target.closest('[data-track]') : null;
+            if (!el) return;
+            var ev = el.getAttribute('data-track');
+            if (ev !== 'whatsapp_click' && ev !== 'call_click') return;
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ event: ev });
+          },
+          true
+        );
+      })();
+    </script>
+  </body>
+</html>

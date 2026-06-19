@@ -1,0 +1,326 @@
+---
+/**
+ * Selettore attività (§7.5) — con gerarchia per stato (scelta del cliente).
+ *
+ * - Stato NEUTRO ('/'): due card grandi alla pari, unite dalla linea di
+ *   corrente. È qui che l'utente sceglie l'attività.
+ * - Stato ATTIVITÀ ('/rafting' o '/canyoning'): NIENTE card opposta (imbuto
+ *   puro). Mostriamo un blocco-conferma orientato all'azione dell'attività
+ *   d'ingresso, con le CTA che portano a prenotare.
+ *
+ * Entrambi i layout sono renderizzati e commutati dal controller activitySwap
+ * (così lo swap senza reload da '/' continua a funzionare).
+ */
+import { activityCards, heroByActivity } from '../data/content';
+import type { Activity } from '../data/content';
+import CurrentLine from './CurrentLine.astro';
+
+interface Props {
+  activity: Activity | 'neutral';
+}
+const { activity } = Astro.props;
+const isNeutral = activity === 'neutral';
+
+const cardImage: Record<Activity, string> = {
+  rafting: '/images/card-rafting.jpg',
+  canyoning: '/images/card-canyoning.jpg',
+};
+const activities: Activity[] = ['rafting', 'canyoning'];
+const initialActivity: Activity = activity === 'canyoning' ? 'canyoning' : 'rafting';
+---
+
+<section
+  class="switcher section"
+  id="attivita"
+  aria-labelledby="switcher-title"
+  data-gate={isNeutral ? 'true' : 'false'}
+>
+  <div class="container switcher__container">
+    <!-- ============ NEUTRO: due card alla pari (gate di scelta su /) ====== -->
+    <div class="switcher__neutral" data-switcher-mode="neutral" hidden={!isNeutral}>
+      <div class="switcher__head reveal">
+        <p class="eyebrow">SCEGLI PER PROSEGUIRE</p>
+        <h2 class="switcher__title" id={isNeutral ? 'switcher-title' : undefined}>
+          Cosa vuoi fare sul Sesia?
+        </h2>
+        <CurrentLine variant="underline" animate={true} class="switcher__underline" />
+        <p class="switcher__sub">Scegli un’attività per continuare. Potrai cambiare quando vuoi.</p>
+      </div>
+
+      <div class="switcher__grid">
+        {
+          activityCards.map((card) => (
+            <button
+              type="button"
+              class="acard reveal"
+              data-activity-card={card.activity}
+              aria-pressed={activity === card.activity}
+              aria-label={`Mostra ${card.title}`}
+            >
+              <span class="acard__media" aria-hidden="true">
+                <img src={cardImage[card.activity]} alt="" loading="lazy" decoding="async" />
+              </span>
+              <span class="acard__body">
+                <span class="acard__title">{card.title}</span>
+                <span class="tag-mono acard__tag">{card.tag}</span>
+                <span class="acard__blurb">{card.blurb}</span>
+                <span class="acard__cue">
+                  Scopri
+                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M5 12h14M13 6l6 6-6 6"
+                    />
+                  </svg>
+                </span>
+              </span>
+            </button>
+          ))
+        }
+
+        <svg
+          class="switcher__link"
+          viewBox="0 0 40 200"
+          aria-hidden="true"
+          preserveAspectRatio="none"
+        >
+          <path
+            d="M20,4 C8,46 32,86 20,120 C10,150 30,176 20,196"
+            fill="none"
+            stroke="var(--sesia-bright)"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            opacity="0.6"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ============ ATTIVITÀ: blocco-conferma, niente card opposta ============ -->
+    <div data-switcher-mode="activity" hidden={isNeutral}>
+      {
+        activities.map((act) => (
+          <div data-activity-pane={act} hidden={act !== initialActivity}>
+            <div class="confirm reveal">
+              <div class="confirm__media" aria-hidden="true">
+                <img src={cardImage[act]} alt="" loading="lazy" decoding="async" />
+                <span class="confirm__badge tag-mono">
+                  {act === 'rafting' ? 'RAFTING' : 'CANYONING'}
+                </span>
+              </div>
+              <div class="confirm__body">
+                <p class="eyebrow">SEI SUL SESIA GIUSTO</p>
+                <h2
+                  class="confirm__title"
+                  id={!isNeutral && act === initialActivity ? 'switcher-title' : undefined}
+                >
+                  {act === 'rafting'
+                    ? 'Pronto a scendere il fiume?'
+                    : 'Pronto a entrare nelle forre?'}
+                </h2>
+                <CurrentLine variant="underline" class="confirm__underline" />
+                <p class="tag-mono confirm__tag">{heroByActivity[act].tagMono}</p>
+                <div class="confirm__ctas">
+                  <a class="btn btn-primary" href="#prenota" data-book={act}>
+                    {heroByActivity[act].ctaPrimary.label}
+                  </a>
+                  {heroByActivity[act].ctaSecondary && (
+                    <a class="btn btn-secondary" href="#prenota" data-book={act}>
+                      {heroByActivity[act].ctaSecondary!.label}
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* La sezione card resta nel flusso normale (fallback senza JS e selettore
+     standard). Su / con JS attivo, la SCELTA avviene nel pop-up modale
+     (vedi ChoiceModal): vedi data-gate="true" come segnale "siamo su /". */
+  .switcher__sub {
+    margin-top: 0.85rem;
+    color: var(--text-mute);
+    font-size: var(--step-0);
+  }
+
+  .switcher__head {
+    text-align: center;
+    margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  }
+  .switcher__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+  }
+  .switcher__underline {
+    margin-inline: auto;
+  }
+
+  /* --- Neutro: due card --- */
+  .switcher__grid {
+    position: relative;
+    display: grid;
+    gap: 1rem;
+  }
+  .acard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 0;
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition:
+      transform var(--dur) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      border-color var(--dur) var(--ease-out);
+  }
+  .acard:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+  .acard[aria-pressed='true'] {
+    border-color: var(--sesia-bright);
+    box-shadow: var(--shadow-lg);
+  }
+  .acard__media {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--sesia-deep);
+  }
+  .acard__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .acard:hover .acard__media img {
+    transform: scale(1.05);
+  }
+  .acard__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1.25rem 1.35rem 1.4rem;
+  }
+  .acard__title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--step-2);
+    line-height: 1.1;
+    color: var(--text);
+  }
+  .acard__tag {
+    color: var(--sesia-deep);
+  }
+  .acard__blurb {
+    color: var(--text-mute);
+    font-size: var(--step-0);
+  }
+  .acard__cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+    font-weight: 600;
+    color: var(--rescue);
+  }
+
+  .switcher__link {
+    display: none;
+  }
+
+  /* --- Attività: blocco-conferma --- */
+  .confirm {
+    display: grid;
+    gap: 0;
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .confirm__media {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--sesia-deep);
+  }
+  .confirm__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .confirm__badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: var(--granite-90);
+    color: var(--sesia-bright);
+    padding: 0.35rem 0.8rem;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+  }
+  .confirm__body {
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+  }
+  .confirm__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+    max-width: 18ch;
+  }
+  .confirm__tag {
+    margin-top: 1rem;
+    color: var(--sesia-deep);
+    font-size: var(--step-0);
+  }
+  .confirm__ctas {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 760px) {
+    .switcher__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+    }
+    .switcher__link {
+      display: block;
+      position: absolute;
+      top: 8%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 84%;
+      pointer-events: none;
+    }
+    .confirm {
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+    }
+    .confirm__media {
+      aspect-ratio: auto;
+      min-height: 100%;
+    }
+    .confirm__body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  }
+</style>

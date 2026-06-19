@@ -1,0 +1,79 @@
+---
+/**
+ * Trust strip (§7.3) — permanente.
+ * Riga compatta sotto l'hero. Su mobile scorre orizzontale; da tablet in su
+ * si distribuisce con i separatori "linea di corrente" tra le voci.
+ */
+import { trustStrip } from '../data/content';
+---
+
+<section class="trust" aria-label="Garanzie Eddyline">
+  <div class="container trust__inner reveal">
+    <ul class="trust__list">
+      {
+        trustStrip.map((item) => (
+          <li class="trust__item">
+            <span set:html={item.replace('★', '<span class="trust__star">★</span>')} />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .trust {
+    background: var(--granite);
+    color: var(--foam);
+    border-top: 1px solid rgba(242, 246, 244, 0.08);
+  }
+  .trust__inner {
+    padding-block: 0.9rem;
+  }
+  .trust__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem 1.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .trust__list::-webkit-scrollbar {
+    display: none;
+  }
+  .trust__item {
+    position: relative;
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+    color: color-mix(in srgb, var(--foam) 82%, transparent);
+    white-space: nowrap;
+  }
+  /* Separatore = punto in colore corrente (richiama la linea) */
+  .trust__item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -0.85rem;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--sesia-bright);
+    transform: translateY(-50%);
+  }
+  :global(.trust__star) {
+    color: var(--sesia-bright);
+  }
+
+  @media (min-width: 980px) {
+    .trust__list {
+      justify-content: center;
+      flex-wrap: wrap;
+      overflow-x: visible;
+    }
+  }
+</style>

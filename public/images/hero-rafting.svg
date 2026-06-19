@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="gr" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#16B8A0"/>
+      <stop offset="0.5" stop-color="#0E5A52"/>
+      <stop offset="1" stop-color="#16242B"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#gr)"/>
+  <g fill="none" stroke="#F2F6F4" stroke-linecap="round" opacity="0.4">
+    <path d="M-50,520 C280,400 560,640 880,500 C1120,400 1380,470 1700,360" stroke-width="4"/>
+    <path d="M-50,640 C300,560 600,720 920,620 C1160,540 1400,590 1700,520" stroke-width="2.5" opacity="0.7"/>
+    <path d="M-50,760 C320,700 640,820 960,740 C1200,680 1440,720 1700,670" stroke-width="2" opacity="0.5"/>
+  </g>
+  <text x="60" y="940" font-family="monospace" font-size="30" fill="#F2F6F4" opacity="0.7">placeholder · hero rafting</text>
+</svg>

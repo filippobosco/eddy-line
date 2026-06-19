@@ -1,0 +1,219 @@
+---
+/**
+ * Percorsi & prezzi (§7.7) — attività.
+ * Rafting: 2 card affiancate. Canyoning: raggruppato PER LIVELLO (non 9 card
+ * sparse). Entrambe le varianti renderizzate; il controller mostra l'attiva.
+ * Tag mono: durata · prezzo · livello (§6.5).
+ */
+import {
+  raftingRoutes,
+  raftingRoutesNote,
+  canyoningGroups,
+  canyoningRoutesNote,
+} from '../data/content';
+import type { Activity } from '../data/content';
+import CurrentLine from './CurrentLine.astro';
+
+interface Props {
+  activity: Activity | 'neutral';
+}
+const { activity } = Astro.props;
+const initial: Activity = activity === 'canyoning' ? 'canyoning' : 'rafting';
+---
+
+<section class="perc section" id="percorsi" aria-labelledby="perc-title">
+  <div class="container">
+    <div class="perc__head reveal">
+      <p class="eyebrow">PERCORSI & PREZZI</p>
+      <h2 class="perc__title" id="perc-title">Scegli il tuo percorso</h2>
+      <CurrentLine variant="underline" animate={true} class="perc__underline" />
+    </div>
+
+    <!-- ============ RAFTING ============ -->
+    <div data-activity-pane="rafting" hidden={initial !== 'rafting'}>
+      <div class="perc__rgrid">
+        {
+          raftingRoutes.map((r) => (
+            <article class="rcard reveal">
+              <header class="rcard__head">
+                <h3 class="rcard__name">{r.name}</h3>
+                <p class="tag-mono rcard__tags">
+                  {r.duration} · {r.price} · {r.level}
+                </p>
+              </header>
+              <p class="rcard__desc">{r.description}</p>
+              <a class="btn btn-primary rcard__cta" href="#prenota" data-book="rafting">
+                Prenota
+              </a>
+            </article>
+          ))
+        }
+      </div>
+      <p class="perc__note">{raftingRoutesNote}</p>
+    </div>
+
+    <!-- ============ CANYONING (per livello) ============ -->
+    <div data-activity-pane="canyoning" hidden={initial !== 'canyoning'}>
+      <div class="perc__groups">
+        {
+          canyoningGroups.map((group) => (
+            <section class="cgroup reveal" aria-label={group.level}>
+              <div class="cgroup__head">
+                <h3 class="cgroup__level">{group.level}</h3>
+                <p class="cgroup__caption">{group.caption}</p>
+              </div>
+              <ul class="cgroup__routes">
+                {group.routes.map((route) => (
+                  <li class="croute">
+                    <div class="croute__main">
+                      <span class="croute__name">{route.name}</span>
+                      <span class="croute__desc">{route.description}</span>
+                    </div>
+                    <span class="tag-mono croute__tags">
+                      {route.duration} · {route.price}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+      <p class="perc__note">{canyoningRoutesNote}</p>
+      <div class="perc__ctas reveal">
+        <a class="btn btn-primary" href="#prenota" data-book="canyoning">Trova il percorso adatto</a>
+        <a class="btn btn-secondary" href="#prenota" data-book="canyoning">Prenota la tua data</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .perc__head {
+    margin-bottom: clamp(1.75rem, 5vw, 2.75rem);
+  }
+  .perc__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+  }
+  .perc__note {
+    margin-top: 1.25rem;
+    font-size: var(--step--1);
+    color: var(--text-mute);
+    font-style: italic;
+  }
+
+  /* --- Rafting: 2 card --- */
+  .perc__rgrid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .rcard {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem 1.5rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--line);
+  }
+  .rcard__name {
+    font-size: var(--step-2);
+  }
+  .rcard__tags {
+    margin-top: 0.5rem;
+    color: var(--sesia-deep);
+  }
+  .rcard__desc {
+    margin-top: 0.9rem;
+    color: var(--text-mute);
+    flex: 1;
+  }
+  .rcard__cta {
+    margin-top: 1.4rem;
+    align-self: flex-start;
+  }
+
+  /* --- Canyoning: gruppi per livello --- */
+  .perc__groups {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .cgroup {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .cgroup__head {
+    padding: 1.25rem 1.4rem 1rem;
+    background: var(--sesia-deep);
+    color: var(--foam);
+  }
+  .cgroup__level {
+    font-size: var(--step-1);
+    color: var(--foam);
+  }
+  .cgroup__caption {
+    margin-top: 0.3rem;
+    font-size: var(--step--1);
+    color: color-mix(in srgb, var(--foam) 82%, transparent);
+  }
+  .cgroup__routes {
+    list-style: none;
+    margin: 0;
+    padding: 0.4rem 1.4rem 1.1rem;
+  }
+  .croute {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .croute:last-child {
+    border-bottom: 0;
+  }
+  .croute__name {
+    font-weight: 600;
+    font-size: var(--step-1);
+  }
+  .croute__desc {
+    color: var(--text-mute);
+    font-size: var(--step-0);
+  }
+  .croute__tags {
+    color: var(--sesia-deep);
+    white-space: nowrap;
+  }
+  .perc__ctas {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 720px) {
+    .perc__rgrid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .croute {
+      flex-direction: row;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+    .croute__main {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }
+  @media (min-width: 1000px) {
+    .perc__groups {
+      grid-template-columns: repeat(3, 1fr);
+      align-items: start;
+    }
+  }
+</style>

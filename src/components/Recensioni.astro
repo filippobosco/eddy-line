@@ -1,0 +1,194 @@
+---
+/**
+ * Recensioni (§7.9) — permanente.
+ * Badge 4,6/5 · 110 recensioni · n.1 ad Alagna + 5 recensioni reali
+ * (parafrasate da TripAdvisor, §8.4) + link a TripAdvisor.
+ */
+import { reviews, reviewsBadge } from '../data/content';
+import CurrentLine from './CurrentLine.astro';
+---
+
+<section class="rev section" id="recensioni" aria-labelledby="rev-title">
+  <div class="container">
+    <div class="rev__head reveal">
+      <p class="eyebrow">DICONO DI NOI</p>
+      <h2 class="rev__title" id="rev-title">L’isola felice sul Sesia</h2>
+      <CurrentLine variant="underline" animate={true} class="rev__underline" />
+    </div>
+
+    <div class="rev__badge reveal">
+      <span class="rev__stars" aria-hidden="true">★★★★★</span>
+      <div class="rev__badge-text">
+        <strong class="rev__rating">{reviewsBadge.rating}</strong>
+        <span class="rev__meta">{reviewsBadge.count} · {reviewsBadge.rank}</span>
+      </div>
+      <a
+        class="btn btn-secondary rev__ta"
+        href={reviewsBadge.tripadvisorUrl}
+        target="_blank"
+        rel="noopener"
+      >
+        Leggi su TripAdvisor
+      </a>
+    </div>
+
+    <ul class="rev__grid" tabindex="0" aria-label="Recensioni dei clienti (scorri per vederle tutte)">
+      {
+        reviews.map((r) => (
+          <li class="review reveal">
+            <span class="review__quote" aria-hidden="true">“</span>
+            <p class="review__text">{r.text}</p>
+            <footer class="review__foot">
+              <span class="review__author">{r.author}</span>
+              <span class="tag-mono review__meta">
+                {r.year} · {r.activity}
+              </span>
+            </footer>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .rev__head {
+    text-align: center;
+    margin-bottom: clamp(1.5rem, 4vw, 2.25rem);
+  }
+  .rev__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+  }
+  .rev__underline {
+    margin-inline: auto;
+  }
+
+  .rev__badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.6rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+  }
+  .rev__stars {
+    color: var(--rescue);
+    font-size: 1.5rem;
+    letter-spacing: 0.1em;
+  }
+  .rev__badge-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .rev__rating {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    color: var(--sesia-deep);
+  }
+  .rev__meta {
+    color: var(--text-mute);
+    font-size: var(--step--1);
+  }
+  .rev__ta {
+    margin-top: 0.4rem;
+  }
+
+  /* Mobile: carosello orizzontale (solo le card; il badge sopra resta fisso).
+     La card successiva "sbircia" per segnalare lo scroll. */
+  .rev__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0.5rem;
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* margini laterali per non incollare la prima/ultima card al bordo */
+    scroll-padding-inline: clamp(1.125rem, 4vw, 2.5rem);
+    margin-inline: calc(-1 * clamp(1.125rem, 4vw, 2.5rem));
+    padding-inline: clamp(1.125rem, 4vw, 2.5rem);
+  }
+  .rev__grid::-webkit-scrollbar {
+    display: none;
+  }
+  .review {
+    position: relative;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.4rem 1.3rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    /* carosello: larghezza fissa, snap */
+    flex: 0 0 82%;
+    scroll-snap-align: center;
+  }
+  .review__quote {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    line-height: 0.6;
+    color: var(--sesia-bright);
+    height: 1.4rem;
+  }
+  .review__text {
+    color: var(--text);
+    flex: 1;
+  }
+  .review__foot {
+    margin-top: 1rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .review__author {
+    font-weight: 600;
+  }
+  .review__meta {
+    color: var(--stone-mute);
+  }
+
+  @media (min-width: 640px) {
+    .rev__badge {
+      flex-direction: row;
+      justify-content: center;
+      gap: 1.25rem;
+      text-align: left;
+    }
+    .rev__badge-text {
+      align-items: flex-start;
+    }
+  }
+  /* Desktop: torna a griglia (niente carosello). */
+  @media (min-width: 760px) {
+    .rev__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      overflow-x: visible;
+      scroll-snap-type: none;
+      margin-inline: 0;
+      padding-inline: 0;
+      padding-bottom: 0;
+    }
+    .review {
+      flex: initial;
+    }
+  }
+  @media (min-width: 1080px) {
+    .rev__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

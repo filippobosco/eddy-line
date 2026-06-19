@@ -1,0 +1,214 @@
+---
+/**
+ * Controller swap attività (§5.3 / §5.5) — client-side, nessun reload.
+ * - Cambia hero (copy/tag/CTA/immagine) + tutte le sezioni [data-activity-pane]
+ * - Aggiorna card attiva (aria-pressed) e switch header (aria-selected)
+ * - history.pushState a /rafting | /canyoning (URL pulito e condivisibile)
+ * - dataLayer.push({event:'activity_selected', activity})
+ * - scroll morbido ai contenuti attività
+ * - gestisce back/forward (popstate)
+ * Lo stato neutro ('/') resta tale finché l'utente non sceglie una card.
+ */
+---
+
+<script>
+  type Activity = 'rafting' | 'canyoning';
+
+  interface HeroStateData {
+    eyebrow: string;
+    h1: string;
+    sub: string;
+    tagMono?: string;
+    ctaPrimary: { label: string; target: string };
+    ctaSecondary?: { label: string; target: string };
+  }
+  interface HeroPayload {
+    states: Record<'neutral' | Activity, HeroStateData>;
+    images: Record<'neutral' | Activity, string>;
+  }
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const hero = document.querySelector<HTMLElement>('[data-hero]');
+  const payloadEl = document.querySelector<HTMLScriptElement>('[data-hero-payload]');
+  if (!hero || !payloadEl) {
+    // Niente hero/payload: niente swap (difensivo).
+  } else {
+    const payload: HeroPayload = JSON.parse(payloadEl.textContent || '{}');
+
+    // Riferimenti hero
+    const el = {
+      img: hero.querySelector<HTMLImageElement>('[data-hero-img]'),
+      eyebrow: hero.querySelector<HTMLElement>('[data-hero-eyebrow]'),
+      h1: hero.querySelector<HTMLElement>('[data-hero-h1]'),
+      sub: hero.querySelector<HTMLElement>('[data-hero-sub]'),
+      tag: hero.querySelector<HTMLElement>('[data-hero-tag]'),
+      ctaPrimary: hero.querySelector<HTMLAnchorElement>('[data-hero-cta-primary]'),
+      ctaSecondary: hero.querySelector<HTMLAnchorElement>('[data-hero-cta-secondary]'),
+    };
+
+    function pushActivity(activity: Activity) {
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({ event: 'activity_selected', activity });
+    }
+
+    function setHero(activity: Activity) {
+      const s = payload.states[activity];
+      if (!s) return;
+      if (el.eyebrow) el.eyebrow.textContent = s.eyebrow;
+      if (el.h1) el.h1.textContent = s.h1;
+      if (el.sub) el.sub.textContent = s.sub;
+      if (el.tag) {
+        if (s.tagMono) {
+          el.tag.textContent = s.tagMono;
+          el.tag.hidden = false;
+        } else {
+          el.tag.hidden = true;
+        }
+      }
+      if (el.ctaPrimary) {
+        el.ctaPrimary.textContent = s.ctaPrimary.label;
+        el.ctaPrimary.setAttribute('href', s.ctaPrimary.target);
+      }
+      if (el.ctaSecondary) {
+        if (s.ctaSecondary) {
+          el.ctaSecondary.textContent = s.ctaSecondary.label;
+          el.ctaSecondary.setAttribute('href', s.ctaSecondary.target);
+          el.ctaSecondary.hidden = false;
+        } else {
+          el.ctaSecondary.hidden = true;
+        }
+      }
+      // Immagine hero (con micro-dissolvenza)
+      const newSrc = payload.images[activity];
+      if (el.img && newSrc && el.img.getAttribute('src') !== newSrc) {
+        if (reduceMotion) {
+          el.img.setAttribute('src', newSrc);
+        } else {
+          hero!.dataset.swapping = 'true';
+          window.setTimeout(() => {
+            el.img!.setAttribute('src', newSrc);
+            hero!.dataset.swapping = 'false';
+          }, 180);
+        }
+      }
+      hero!.dataset.activity = activity;
+    }
+
+    function setPanes(activity: Activity) {
+      document.querySelectorAll<HTMLElement>('[data-activity-pane]').forEach((pane) => {
+        pane.hidden = pane.dataset.activityPane !== activity;
+      });
+    }
+
+    function setCards(activity: Activity) {
+      document.querySelectorAll<HTMLElement>('[data-activity-card]').forEach((card) => {
+        card.setAttribute(
+          'aria-pressed',
+          String(card.dataset.activityCard === activity)
+        );
+      });
+    }
+
+    function setSwitch(activity: Activity) {
+      document
+        .querySelectorAll<HTMLElement>('[data-activity-switch] [data-activity-target]')
+        .forEach((opt) => {
+          opt.setAttribute('aria-selected', String(opt.dataset.activityTarget === activity));
+        });
+    }
+
+    // Selettore (§7.5): una volta scelta un'attività, niente più due card —
+    // mostriamo il blocco-conferma (imbuto puro), coerente con /rafting e
+    // /canyoning renderizzati server-side.
+    function setSwitcherMode(mode: 'neutral' | 'activity') {
+      document.querySelectorAll<HTMLElement>('[data-switcher-mode]').forEach((block) => {
+        block.hidden = block.dataset.switcherMode !== mode;
+      });
+    }
+
+    // Applica uno stato attività completo (senza navigazione/scroll)
+    function applyActivity(activity: Activity) {
+      setHero(activity);
+      setPanes(activity);
+      setCards(activity);
+      setSwitch(activity);
+      setSwitcherMode('activity');
+    }
+
+    function scrollToContent() {
+      // Dopo la scelta porta alla sezione SUBITO SOTTO l'hero (#attivita:
+      // blocco-conferma dell'attività scelta), non più in basso.
+      const target = document.getElementById('attivita') || document.getElementById('esperienza');
+      if (target) {
+        target.scrollIntoView({
+          behavior: reduceMotion ? 'auto' : 'smooth',
+          block: 'start',
+        });
+      }
+    }
+
+    // Cambio attività su interazione utente (card / switch)
+    function selectActivity(activity: Activity, opts: { scroll?: boolean } = {}) {
+      applyActivity(activity);
+      const url = '/' + activity;
+      if (location.pathname !== url) {
+        history.pushState({ activity }, '', url);
+      }
+      pushActivity(activity);
+      if (opts.scroll) scrollToContent();
+    }
+
+    // --- Wiring: card del selettore (§7.5) ---
+    document.querySelectorAll<HTMLElement>('[data-activity-card]').forEach((card) => {
+      card.addEventListener('click', () => {
+        const a = card.dataset.activityCard as Activity;
+        selectActivity(a, { scroll: true });
+      });
+    });
+
+    // --- Wiring: switch nell'header (no reload come le card) ---
+    document
+      .querySelectorAll<HTMLAnchorElement>('[data-activity-switch] [data-activity-target]')
+      .forEach((opt) => {
+        opt.addEventListener('click', (e) => {
+          e.preventDefault();
+          const a = opt.dataset.activityTarget as Activity;
+          selectActivity(a, { scroll: false });
+        });
+      });
+
+    // Ripristina lo stato neutro ('/'): hero neutro + due card del selettore.
+    // Le sezioni attività (Esperienza/Percorsi) mostrano comunque un'attività
+    // concreta — non esiste una loro vista "neutra" — quindi le lasciamo come
+    // sono: in stato neutro contano l'hero e il selettore.
+    function restoreNeutral() {
+      const s = payload.states.neutral;
+      if (s) {
+        if (el.eyebrow) el.eyebrow.textContent = s.eyebrow;
+        if (el.h1) el.h1.textContent = s.h1;
+        if (el.sub) el.sub.textContent = s.sub;
+        if (el.tag) el.tag.hidden = true;
+        if (el.ctaPrimary) {
+          el.ctaPrimary.textContent = s.ctaPrimary.label;
+          el.ctaPrimary.setAttribute('href', s.ctaPrimary.target);
+        }
+        if (el.ctaSecondary) el.ctaSecondary.hidden = true;
+        const img = payload.images.neutral;
+        if (el.img && img) el.img.setAttribute('src', img);
+        hero!.dataset.activity = 'neutral';
+      }
+      setSwitcherMode('neutral');
+      setCards('' as Activity); // nessuna card "premuta"
+      setSwitch('' as Activity); // nessuna voce switch selezionata
+    }
+
+    // --- back/forward del browser ---
+    window.addEventListener('popstate', () => {
+      const path = location.pathname;
+      if (path === '/rafting') applyActivity('rafting');
+      else if (path === '/canyoning') applyActivity('canyoning');
+      else restoreNeutral();
+    });
+  }
+</script>

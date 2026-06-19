@@ -1,0 +1,41 @@
+---
+/**
+ * Set di icone a tratto (stroke) per "Perché Eddyline" (§7.4) e UI.
+ * Stile coerente: linea sottile, line-cap morbidi — richiama la corrente.
+ */
+interface Props {
+  name: 'badge' | 'gear' | 'shield' | 'pin';
+  size?: number;
+  class?: string;
+}
+const { name, size = 28, class: className = '' } = Astro.props;
+
+const paths: Record<Props['name'], string> = {
+  // Coccarda / certificazione
+  badge:
+    'M12 3l2.2 1.4 2.6-.3 1 2.4 2.2 1.4-.6 2.5.9 2.4-1.9 1.8.1 2.6-2.6.6-1.5 2.2-2.4-1-2.4 1-1.5-2.2-2.6-.6.1-2.6L4 14.3l.9-2.4-.6-2.5 2.2-1.4 1-2.4 2.6.3z M9.5 12l1.8 1.8L15 10',
+  // Ingranaggio / attrezzatura
+  gear:
+    'M12 9a3 3 0 100 6 3 3 0 000-6z M19.4 13a7.6 7.6 0 000-2l2-1.5-2-3.4-2.3 1a7.6 7.6 0 00-1.7-1l-.3-2.5H10.9l-.3 2.5a7.6 7.6 0 00-1.7 1l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 000 2l-2 1.5 2 3.4 2.3-1c.5.4 1.1.7 1.7 1l.3 2.5h3.2l.3-2.5c.6-.3 1.2-.6 1.7-1l2.3 1 2-3.4z',
+  // Scudo / sicurezza
+  shield: 'M12 3l7 3v5c0 4.2-2.9 8.1-7 9-4.1-.9-7-4.8-7-9V6z M9 12l2 2 4-4',
+  // Pin / posizione
+  pin: 'M12 21s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z M12 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z',
+};
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.6"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  aria-hidden="true"
+  focusable="false"
+>
+  {paths[name].split(' M').map((seg, i) => <path d={i === 0 ? seg : 'M' + seg} />)}
+</svg>

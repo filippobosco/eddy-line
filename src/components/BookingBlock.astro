@@ -1,0 +1,429 @@
+---
+/**
+ * Blocco Prenotazione (§7.11) — il cuore conversione.
+ * Due tab nello stesso blocco:
+ *  - "Prenota la tua data" → embed Calendly dell'attività attiva (lazy)
+ *  - "Richiedi informazioni" → form (§9.2)
+ * Default tab: rafting → Calendly; canyoning → form ("Trova il percorso adatto").
+ *
+ * Entrambe le attività sono renderizzate in [data-activity-pane]; il controller
+ * activitySwap mostra quella attiva. Le CTA con data-book aprono questo blocco
+ * sul tab corretto.
+ */
+import config from '../config';
+import { bookingConfig } from '../data/content';
+import type { Activity } from '../data/content';
+import CurrentLine from './CurrentLine.astro';
+import BookingForm from './BookingForm.astro';
+
+interface Props {
+  activity: Activity | 'neutral';
+}
+const { activity } = Astro.props;
+const initial: Activity = activity === 'canyoning' ? 'canyoning' : 'rafting';
+
+const activities: Activity[] = ['rafting', 'canyoning'];
+const calendlyUrl: Record<Activity, string> = {
+  rafting: config.integrations.calendlyRaftingUrl,
+  canyoning: config.integrations.calendlyCanyoningUrl,
+};
+---
+
+<section class="book section" id="prenota" aria-labelledby="book-title">
+  <div class="container container-narrow">
+    <div class="book__head reveal">
+      <p class="eyebrow">PRENOTA · IN POCHI MINUTI</p>
+      <h2 class="book__title" id="book-title">Scegli la tua data sul Sesia</h2>
+      <CurrentLine variant="underline" animate={true} class="book__underline" />
+      <p class="book__lead">
+        La prenotazione è una <strong>richiesta di data</strong>: la confermiamo noi,
+        di persona. Risposta rapida, nessun pagamento online richiesto.
+      </p>
+    </div>
+
+    {
+      activities.map((act) => {
+        const defaultTab = bookingConfig[act].defaultTab; // 'calendly' | 'form'
+        return (
+          <div data-activity-pane={act} hidden={act !== initial}>
+            <div class="book__card reveal" data-booking data-default-tab={defaultTab}>
+              <div class="book__tabs" role="tablist" aria-label="Modalità di contatto">
+                <button
+                  type="button"
+                  role="tab"
+                  class="book__tab"
+                  data-tab="calendly"
+                  id={`tab-cal-${act}`}
+                  aria-controls={`panel-cal-${act}`}
+                  aria-selected={defaultTab === 'calendly'}
+                >
+                  Prenota la tua data
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  class="book__tab"
+                  data-tab="form"
+                  id={`tab-form-${act}`}
+                  aria-controls={`panel-form-${act}`}
+                  aria-selected={defaultTab === 'form'}
+                >
+                  {act === 'canyoning' ? 'Trova il percorso adatto' : 'Richiedi informazioni'}
+                </button>
+              </div>
+
+              {/* --- Pannello Calendly (lazy) --- */}
+              <div
+                class="book__panel"
+                role="tabpanel"
+                id={`panel-cal-${act}`}
+                aria-labelledby={`tab-cal-${act}`}
+                data-panel="calendly"
+                hidden={defaultTab !== 'calendly'}
+              >
+                <div
+                  class="book__calendly"
+                  data-calendly
+                  data-calendly-url={calendlyUrl[act]}
+                  data-loaded="false"
+                >
+                  <div class="book__calendly-ph">
+                    <span class="book__spinner" aria-hidden="true" />
+                    <p>Carico il calendario…</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* --- Pannello Form --- */}
+              <div
+                class="book__panel"
+                role="tabpanel"
+                id={`panel-form-${act}`}
+                aria-labelledby={`tab-form-${act}`}
+                data-panel="form"
+                hidden={defaultTab !== 'form'}
+              >
+                <BookingForm activity={act} />
+              </div>
+            </div>
+          </div>
+        );
+      })
+    }
+  </div>
+</section>
+
+<style>
+  .book {
+    background: var(--foam-soft);
+  }
+  .book__head {
+    text-align: center;
+    margin-bottom: clamp(1.5rem, 4vw, 2.25rem);
+  }
+  .book__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+  }
+  .book__underline {
+    margin-inline: auto;
+  }
+  .book__lead {
+    margin-top: 1rem;
+    color: var(--text-mute);
+    max-width: 48ch;
+    margin-inline: auto;
+  }
+
+  .book__card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .book__tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.4rem;
+    background: var(--foam-soft);
+    border-bottom: 1px solid var(--line);
+  }
+  .book__tab {
+    flex: 1;
+    padding: 0.85rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: var(--step--1);
+    color: var(--text-mute);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+  .book__tab[aria-selected='true'] {
+    background: var(--surface);
+    color: var(--sesia-deep);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .book__panel {
+    padding: clamp(1.25rem, 4vw, 2rem);
+  }
+  .book__panel[hidden] {
+    display: none;
+  }
+
+  .book__calendly {
+    min-height: 580px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+  .book__calendly :global(iframe) {
+    width: 100%;
+    min-height: 580px;
+    border: 0;
+    display: block;
+  }
+  .book__calendly-ph {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    min-height: 580px;
+    color: var(--text-mute);
+  }
+  .book__spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--foam-soft);
+    border-top-color: var(--sesia-bright);
+    animation: book-spin 0.9s linear infinite;
+  }
+  @keyframes book-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .book__spinner {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Logica blocco prenotazione:
+   * - tab switching (Calendly / form) con aria-selected
+   * - Calendly lazy: caricato solo all'entrata in viewport o al click sul tab
+   * - listener postMessage `calendly.event_scheduled` → dataLayer
+   * - form: validazione, honeypot/time-trap, POST a /api/lead, stati, form_submit
+   * - CTA con data-book: scroll a #prenota + apertura tab corretto
+   */
+  type Activity = 'rafting' | 'canyoning';
+
+  const dl = () => ((window as any).dataLayer = (window as any).dataLayer || []);
+
+  // ---- Calendly: caricamento script una sola volta ----
+  let calendlyScriptPromise: Promise<void> | null = null;
+  function loadCalendlyScript(): Promise<void> {
+    if (calendlyScriptPromise) return calendlyScriptPromise;
+    calendlyScriptPromise = new Promise((resolve) => {
+      if ((window as any).Calendly) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://assets.calendly.com/assets/external/widget.js';
+      s.async = true;
+      s.onload = () => resolve();
+      document.head.appendChild(s);
+    });
+    return calendlyScriptPromise;
+  }
+
+  function initCalendly(container: HTMLElement) {
+    if (container.dataset.loaded === 'true') return;
+    const url = container.dataset.calendlyUrl;
+    if (!url || url.includes('PLACEHOLDER')) {
+      // Placeholder non configurato: mostriamo un avviso utile invece dello spinner infinito.
+      container.dataset.loaded = 'true';
+      container.innerHTML =
+        '<div class="book__calendly-ph"><p>Calendario in fase di configurazione.<br>Usa “Richiedi informazioni” qui sotto: ti ricontattiamo noi.</p></div>';
+      return;
+    }
+    container.dataset.loaded = 'true';
+    loadCalendlyScript().then(() => {
+      container.innerHTML = '';
+      (window as any).Calendly?.initInlineWidget({
+        url,
+        parentElement: container,
+      });
+    });
+  }
+
+  // Carica il Calendly del pannello attivo quando entra in viewport
+  function observeCalendly(container: HTMLElement) {
+    if (!('IntersectionObserver' in window)) {
+      initCalendly(container);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            // carica solo se il pannello calendly è quello attivo
+            const panel = container.closest<HTMLElement>('[data-panel="calendly"]');
+            if (panel && !panel.hidden) initCalendly(container);
+            io.unobserve(container);
+          }
+        });
+      },
+      { rootMargin: '200px' }
+    );
+    io.observe(container);
+  }
+
+  // ---- Tab switching ----
+  function activateTab(card: HTMLElement, tab: 'calendly' | 'form') {
+    card.querySelectorAll<HTMLElement>('.book__tab').forEach((t) => {
+      t.setAttribute('aria-selected', String(t.dataset.tab === tab));
+    });
+    card.querySelectorAll<HTMLElement>('.book__panel').forEach((p) => {
+      p.hidden = p.dataset.panel !== tab;
+    });
+    if (tab === 'calendly') {
+      const c = card.querySelector<HTMLElement>('[data-calendly]');
+      if (c) initCalendly(c);
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-booking]').forEach((card) => {
+    card.querySelectorAll<HTMLElement>('.book__tab').forEach((tabBtn) => {
+      tabBtn.addEventListener('click', () => {
+        activateTab(card, tabBtn.dataset.tab as 'calendly' | 'form');
+      });
+    });
+    // Lazy: osserva il container Calendly del pannello di default (se attivo)
+    const cal = card.querySelector<HTMLElement>('[data-calendly]');
+    if (cal) observeCalendly(cal);
+  });
+
+  // ---- Calendly event_scheduled → dataLayer ----
+  window.addEventListener('message', (e) => {
+    if (e.origin.indexOf('calendly.com') === -1) return;
+    const data = (e as MessageEvent).data;
+    if (data && data.event === 'calendly.event_scheduled') {
+      // attività attiva = quella del pannello calendly visibile
+      const activePane = [...document.querySelectorAll<HTMLElement>('#prenota [data-activity-pane]')].find(
+        (p) => !p.hidden
+      );
+      const activity = (activePane?.dataset.activityPane as Activity) || 'rafting';
+      dl().push({ event: 'calendly_event_scheduled', activity });
+    }
+  });
+
+  // ---- CTA data-book: scroll a #prenota e apri il tab giusto ----
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-book]').forEach((cta) => {
+    cta.addEventListener('click', (e) => {
+      const label = cta.textContent?.toLowerCase() || '';
+      // "Richiedi informazioni" / "Trova il percorso" → form; altrimenti calendly
+      const wantForm = label.includes('informazioni') || label.includes('percorso');
+      const section = document.getElementById('prenota');
+      const activePane = [...document.querySelectorAll<HTMLElement>('#prenota [data-activity-pane]')].find(
+        (p) => !p.hidden
+      );
+      const card = activePane?.querySelector<HTMLElement>('[data-booking]');
+      if (card) activateTab(card, wantForm ? 'form' : 'calendly');
+      if (section) {
+        e.preventDefault();
+        section.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // ---- Form submit (§9.2) ----
+  document.querySelectorAll<HTMLFormElement>('[data-lead-form]').forEach((form) => {
+    // time-trap: timestamp di "apertura" form
+    const openedAt = Date.now();
+    const okMsg = form.querySelector<HTMLElement>('[data-lead-ok]');
+    const errMsg = form.querySelector<HTMLElement>('[data-lead-error]');
+
+    const showFieldError = (name: string, msg: string | null) => {
+      const el = form.querySelector<HTMLElement>(`[data-err-for="${name}"]`);
+      const input = form.querySelector<HTMLElement>(`[name="${name}"]`);
+      if (el) {
+        el.textContent = msg || '';
+        el.hidden = !msg;
+      }
+      if (input) {
+        if (msg) input.setAttribute('aria-invalid', 'true');
+        else input.removeAttribute('aria-invalid');
+      }
+    };
+
+    const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (okMsg) okMsg.hidden = true;
+      if (errMsg) errMsg.hidden = true;
+      ['nome', 'email', 'telefono', 'privacy'].forEach((n) => showFieldError(n, null));
+
+      const fd = new FormData(form);
+      const nome = String(fd.get('nome') || '').trim();
+      const email = String(fd.get('email') || '').trim();
+      const telefono = String(fd.get('telefono') || '').trim();
+      const privacy = fd.get('privacy') === 'on';
+
+      // Validazione client (lo specchio del server)
+      let valid = true;
+      if (nome.length < 2) { showFieldError('nome', 'Inserisci il tuo nome.'); valid = false; }
+      if (!isEmail(email)) { showFieldError('email', 'Inserisci un’email valida.'); valid = false; }
+      if (telefono.length < 6) { showFieldError('telefono', 'Inserisci un recapito telefonico.'); valid = false; }
+      if (!privacy) { showFieldError('privacy', 'Serve l’accettazione della privacy.'); valid = false; }
+      if (!valid) return;
+
+      const submitBtn = form.querySelector<HTMLButtonElement>('.lead__submit');
+      if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Invio…'; }
+
+      const payload = {
+        nome, email, telefono,
+        attivita: String(fd.get('attivita') || ''),
+        percorso: String(fd.get('percorso') || ''),
+        data: String(fd.get('data') || ''),
+        persone: String(fd.get('persone') || ''),
+        messaggio: String(fd.get('messaggio') || ''),
+        privacy,
+        website: String(fd.get('website') || ''), // honeypot
+        _t: openedAt,
+      };
+
+      try {
+        const res = await fetch('/api/lead', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const out = await res.json().catch(() => ({}));
+        if (res.ok && out.ok) {
+          form.reset();
+          if (okMsg) okMsg.hidden = false;
+          dl().push({ event: 'form_submit', activity: payload.attivita });
+        } else if (out.errors) {
+          Object.entries(out.errors).forEach(([k, v]) => showFieldError(k, String(v)));
+        } else {
+          if (errMsg) { errMsg.textContent = out.error || 'Invio non riuscito. Riprova tra poco.'; errMsg.hidden = false; }
+        }
+      } catch {
+        if (errMsg) { errMsg.textContent = 'Problema di rete. Riprova tra poco.'; errMsg.hidden = false; }
+      } finally {
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Invia la richiesta'; }
+      }
+    });
+  });
+</script>

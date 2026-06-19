@@ -1,0 +1,312 @@
+---
+/**
+ * Pop-up modale di scelta bloccante (solo su /).
+ * Comparsa 2s dopo il load. Bloccante: niente X, niente chiusura cliccando
+ * fuori, niente ESC — si chiude SOLO scegliendo un'attività.
+ *
+ * Implementato con <dialog showModal()> nativo: focus trap + aria-modal +
+ * inertizzazione della pagina sotto gratis. Intercettiamo `cancel` (ESC) e i
+ * click sul backdrop per impedire la chiusura.
+ *
+ * Fallback: se JS è disattivato il <dialog> resta chiuso e la pagina è
+ * navigabile normalmente (la scelta avviene comunque dalla sezione card).
+ *
+ * Reso solo quando activity === 'neutral' (cioè su /).
+ */
+import { activityCards } from '../data/content';
+import CurrentLine from './CurrentLine.astro';
+
+const cardImage = {
+  rafting: '/images/card-rafting.jpg',
+  canyoning: '/images/card-canyoning.jpg',
+} as const;
+---
+
+<dialog class="choice" data-choice-modal aria-labelledby="choice-title">
+  <div class="choice__inner">
+    <header class="choice__head">
+      <p class="eyebrow choice__eyebrow">SCEGLI PER PROSEGUIRE</p>
+      <h2 class="choice__title" id="choice-title">Cosa vuoi fare sul Sesia?</h2>
+      <CurrentLine variant="underline" class="choice__underline" />
+      <p class="choice__sub">
+        Scegli un’attività per continuare. Potrai cambiare quando vuoi.
+      </p>
+    </header>
+
+    <div class="choice__grid">
+      {
+        activityCards.map((card) => (
+          <button
+            type="button"
+            class="choice__card"
+            data-choice-card={card.activity}
+            aria-label={`Scegli ${card.title}`}
+          >
+            <span class="choice__media" aria-hidden="true">
+              <img src={cardImage[card.activity]} alt="" decoding="async" />
+            </span>
+            <span class="choice__body">
+              <span class="choice__name">{card.title}</span>
+              <span class="tag-mono choice__tag">{card.tag}</span>
+              <span class="choice__blurb">{card.blurb}</span>
+              <span class="choice__cue">
+                Scegli
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                  <path
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M5 12h14M13 6l6 6-6 6"
+                  />
+                </svg>
+              </span>
+            </span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .choice {
+    border: none;
+    padding: 0;
+    background: transparent;
+    color: var(--text);
+    /* Centraggio robusto in entrambi gli assi, anche se il contenuto è alto:
+       fixed + inset:0 + margin:auto evita che il dialog si "incolli" in alto a
+       sinistra quando supera l'altezza della viewport (lo scroll va all'inner). */
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(56rem, 94vw);
+    max-width: 94vw;
+    max-height: 92svh;
+    overflow: hidden;
+  }
+  .choice::backdrop {
+    background: color-mix(in srgb, var(--granite) 78%, transparent);
+    backdrop-filter: blur(4px);
+  }
+  /* Comparsa morbida (reduced-motion la disattiva sotto) */
+  .choice[open] {
+    animation: choice-in var(--dur) var(--ease-out);
+  }
+  .choice[open]::backdrop {
+    animation: choice-fade var(--dur) var(--ease-out);
+  }
+  @keyframes choice-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes choice-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .choice__inner {
+    background: var(--foam);
+    border-radius: var(--radius-xl);
+    padding: clamp(1.5rem, 5vw, 2.75rem);
+    box-shadow: var(--shadow-lg);
+    /* Lo scroll del contenuto alto vive qui, così il dialog resta centrato. */
+    max-height: 92svh;
+    overflow-y: auto;
+  }
+  .choice__head {
+    text-align: center;
+    margin-bottom: clamp(1.25rem, 4vw, 2rem);
+  }
+  .choice__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+  }
+  .choice__underline {
+    margin-inline: auto;
+  }
+  .choice__sub {
+    margin-top: 0.85rem;
+    color: var(--text-mute);
+    font-size: var(--step-0);
+  }
+
+  .choice__grid {
+    display: grid;
+    gap: 1rem;
+  }
+  .choice__card {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 0;
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .choice__card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--sesia-bright);
+  }
+  .choice__media {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: var(--sesia-deep);
+  }
+  .choice__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--dur-slow) var(--ease-out);
+  }
+  .choice__card:hover .choice__media img {
+    transform: scale(1.05);
+  }
+  .choice__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1.1rem 1.25rem 1.3rem;
+  }
+  .choice__name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--step-2);
+    line-height: 1.1;
+  }
+  .choice__tag {
+    color: var(--sesia-deep);
+  }
+  .choice__blurb {
+    color: var(--text-mute);
+    font-size: var(--step-0);
+  }
+  .choice__cue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+    font-weight: 600;
+    color: var(--rescue);
+  }
+
+  @media (min-width: 680px) {
+    .choice__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .choice[open],
+    .choice[open]::backdrop {
+      animation: none;
+    }
+    .choice__media img,
+    .choice__card {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Controller del pop-up di scelta:
+   * - apre il <dialog> in modale 2s dopo il load (solo se presente, cioè su /)
+   * - bloccante: blocca ESC (cancel) e i click sul backdrop
+   * - blocca lo scroll del body mentre è aperto
+   * - alla scelta: delega allo stesso flusso delle card (data-choice-card →
+   *   simula la scelta dell'attività), poi chiude
+   */
+  (function () {
+    const modal = document.querySelector<HTMLDialogElement>('[data-choice-modal]');
+    if (!modal || typeof modal.showModal !== 'function') return;
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let opened = false;
+
+    function lockBody() {
+      document.body.style.overflow = 'hidden';
+    }
+    function unlockBody() {
+      document.body.style.overflow = '';
+    }
+
+    function openModal() {
+      if (opened || modal!.open) return;
+      // Non riaprire se l'utente ha già scelto in altro modo (URL non più '/')
+      if (location.pathname !== '/') return;
+      opened = true;
+      modal!.showModal();
+      lockBody();
+      // focus sulla prima card per la tastiera
+      modal!.querySelector<HTMLElement>('[data-choice-card]')?.focus();
+    }
+
+    // Bloccante: impedisci la chiusura via ESC
+    modal.addEventListener('cancel', (e) => {
+      e.preventDefault();
+    });
+
+    // Bloccante: impedisci la chiusura cliccando sul backdrop.
+    // (Il click sul backdrop arriva al <dialog> stesso, non al contenuto.)
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        e.preventDefault();
+        // micro "shake" per segnalare che bisogna scegliere
+        if (!reduce) {
+          const inner = modal.querySelector<HTMLElement>('.choice__inner');
+          if (inner) {
+            inner.animate(
+              [
+                { transform: 'translateX(0)' },
+                { transform: 'translateX(-6px)' },
+                { transform: 'translateX(6px)' },
+                { transform: 'translateX(0)' },
+              ],
+              { duration: 240, easing: 'ease-in-out' }
+            );
+          }
+        }
+      }
+    });
+
+    // Scelta → riusa la card in-flow corrispondente (che attiva swap + scroll)
+    modal.querySelectorAll<HTMLElement>('[data-choice-card]').forEach((card) => {
+      card.addEventListener('click', () => {
+        const activity = card.dataset.choiceCard;
+        const target = document.querySelector<HTMLElement>(
+          `.switcher [data-activity-card="${activity}"]`
+        );
+        unlockBody();
+        modal.close();
+        // delega: la card in-flow fa swap senza reload + pushState + scroll
+        if (target) target.click();
+      });
+    });
+
+    // Apri dopo 2s (richiesta: comparsa qualche secondo dopo l'apertura)
+    if (location.pathname === '/') {
+      window.setTimeout(openModal, 2000);
+    }
+  })();
+</script>

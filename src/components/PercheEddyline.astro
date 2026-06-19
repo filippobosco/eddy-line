@@ -1,0 +1,90 @@
+---
+/**
+ * Perché Eddyline (§7.4) — permanente.
+ * 4 value prop a icone, scansionabili.
+ */
+import { valueProps } from '../data/content';
+import Icon from './Icon.astro';
+import CurrentLine from './CurrentLine.astro';
+---
+
+<section class="perche section" aria-labelledby="perche-title">
+  <div class="container">
+    <div class="perche__head reveal">
+      <p class="eyebrow">PERCHÉ EDDYLINE</p>
+      <h2 class="perche__title" id="perche-title">Vent’anni di Sesia, fatti bene</h2>
+      <CurrentLine variant="underline" animate={true} class="perche__underline" />
+    </div>
+
+    <ul class="perche__grid">
+      {
+        valueProps.map((vp) => (
+          <li class="vprop reveal">
+            <span class="vprop__icon" aria-hidden="true">
+              <Icon name={vp.icon as any} size={26} />
+            </span>
+            <h3 class="vprop__title">{vp.title}</h3>
+            <p class="vprop__body">{vp.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .perche__head {
+    margin-bottom: clamp(1.75rem, 5vw, 2.75rem);
+  }
+  .perche__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+    max-width: 18ch;
+  }
+
+  .perche__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  .vprop {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem 1.4rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--line);
+  }
+  .vprop__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-md);
+    background: var(--sesia-bright-15);
+    color: var(--sesia-deep);
+    margin-bottom: 1rem;
+  }
+  .vprop__title {
+    font-size: var(--step-1);
+    margin-bottom: 0.4rem;
+  }
+  .vprop__body {
+    color: var(--text-mute);
+    font-size: var(--step-0);
+  }
+
+  @media (min-width: 620px) {
+    .perche__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+  }
+  @media (min-width: 1000px) {
+    .perche__grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>
