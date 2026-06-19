@@ -1,0 +1,198 @@
+---
+/**
+ * Come arrivare / la base (§7.12) — permanente.
+ * Indirizzo base (Campertogno, NON Carrara), navigatore, percorso, distanze,
+ * cenni alla base. Mappa Google Maps embed caricata LAZY (solo quando entra in
+ * viewport — §10 performance), con link diretto come fallback.
+ */
+import { comeArrivare, contacts } from '../data/content';
+import CurrentLine from './CurrentLine.astro';
+
+const q = encodeURIComponent(comeArrivare.mapQuery);
+// Embed senza API key + link "apri in Maps"
+const mapEmbedSrc = `https://www.google.com/maps?q=${q}&z=13&output=embed`;
+const mapLink = `https://www.google.com/maps?q=${q}`;
+---
+
+<section class="arrive section" id="come-arrivare" aria-labelledby="arrive-title">
+  <div class="container">
+    <div class="arrive__grid">
+      <div class="arrive__info reveal">
+        <p class="eyebrow">COME ARRIVARE · LA BASE</p>
+        <h2 class="arrive__title" id="arrive-title">A due ore da casa, ai piedi del Monte Rosa</h2>
+        <CurrentLine variant="underline" animate={true} class="arrive__underline" />
+
+        <ul class="arrive__list">
+          <li class="arrive__item">
+            <span class="arrive__label tag-mono">Base operativa</span>
+            <p class="arrive__value">{comeArrivare.baseName}</p>
+            <p class="arrive__hint">{comeArrivare.navHint}</p>
+          </li>
+          <li class="arrive__item">
+            <span class="arrive__label tag-mono">In auto</span>
+            <p class="arrive__value">{comeArrivare.route}</p>
+          </li>
+          <li class="arrive__item">
+            <span class="arrive__label tag-mono">Alla base</span>
+            <p class="arrive__value">{comeArrivare.facilities}</p>
+          </li>
+        </ul>
+
+        <div class="arrive__ctas">
+          <a class="btn btn-primary" href={mapLink} target="_blank" rel="noopener">
+            Apri in Google Maps
+          </a>
+          <a class="btn btn-secondary" href={contacts.phoneHref} data-track="call_click">
+            Chiama per indicazioni
+          </a>
+        </div>
+      </div>
+
+      <!-- Mappa: lazy, caricata all'ingresso in viewport -->
+      <div class="arrive__map reveal" data-map data-map-src={mapEmbedSrc} data-loaded="false">
+        <div class="arrive__map-ph" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="34" height="34">
+            <path
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 21s7-5.5 7-11a7 7 0 10-14 0c0 5.5 7 11 7 11z M12 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z"
+            ></path>
+          </svg>
+          <p>Mappa di Campertogno (VC)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .arrive {
+    background: var(--foam-soft);
+  }
+  .arrive__grid {
+    display: grid;
+    gap: 2rem;
+    align-items: stretch;
+  }
+  .arrive__title {
+    font-size: var(--step-3);
+    margin-top: 0.5rem;
+    max-width: 18ch;
+  }
+
+  .arrive__list {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+  }
+  .arrive__item {
+    display: grid;
+    gap: 0.2rem;
+  }
+  .arrive__label {
+    color: var(--sesia-deep);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+  }
+  .arrive__value {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .arrive__hint {
+    color: var(--text-mute);
+    font-size: var(--step--1);
+  }
+
+  .arrive__ctas {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .arrive__map {
+    position: relative;
+    min-height: 320px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    background: var(--sesia-deep);
+  }
+  .arrive__map :global(iframe) {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    border: 0;
+    display: block;
+  }
+  .arrive__map-ph {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: color-mix(in srgb, var(--foam) 80%, transparent);
+    font-size: var(--step--1);
+  }
+
+  @media (min-width: 880px) {
+    .arrive__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+    .arrive__map {
+      min-height: 100%;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Carica la mappa Google Maps solo quando la sezione entra in viewport
+   * (lazy — §10). Riduce il peso iniziale della pagina sul paid mobile.
+   */
+  (function () {
+    const box = document.querySelector<HTMLElement>('[data-map]');
+    if (!box) return;
+
+    function loadMap() {
+      if (box!.dataset.loaded === 'true') return;
+      const src = box!.dataset.mapSrc;
+      if (!src) return;
+      box!.dataset.loaded = 'true';
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.loading = 'lazy';
+      iframe.title = 'Mappa della base Eddyline a Campertogno (VC)';
+      iframe.referrerPolicy = 'no-referrer-when-downgrade';
+      iframe.allowFullscreen = true;
+      box!.innerHTML = '';
+      box!.appendChild(iframe);
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      loadMap();
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            loadMap();
+            io.unobserve(box!);
+          }
+        });
+      },
+      { rootMargin: '200px' }
+    );
+    io.observe(box);
+  })();
+</script>

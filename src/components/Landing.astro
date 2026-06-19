@@ -18,6 +18,7 @@ import Percorsi from './Percorsi.astro';
 import Sicurezza from './Sicurezza.astro';
 import Recensioni from './Recensioni.astro';
 import Faq from './Faq.astro';
+import ComeArrivare from './ComeArrivare.astro';
 import BookingBlock from './BookingBlock.astro';
 import Footer from './Footer.astro';
 import StickyCta from './StickyCta.astro';
@@ -80,6 +81,9 @@ const { title, description } = meta[activity];
 
   <!-- FAQ dopo il form (richiesta Angela): mobile + desktop (§7.10) -->
   <Faq />
+
+  <!-- Come arrivare / la base + mappa (§7.12) -->
+  <ComeArrivare />
 
   <!-- Controller swap client-side (§5.3/§5.5) -->
   <ActivitySwap />
