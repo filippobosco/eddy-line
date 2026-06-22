@@ -37,12 +37,12 @@ const meta: Record<Activity | 'neutral', { title: string; description: string }>
   neutral: {
     title: 'Eddyline — Rafting e Canyoning sul fiume Sesia, in Valsesia',
     description:
-      'Avventura sull’acqua con guide certificate, attrezzatura inclusa e massima sicurezza. A 2 ore da Milano e Torino, ai piedi del Monte Rosa.',
+      'Avventura sull’acqua con guide certificate, attrezzatura inclusa e massima sicurezza. Nel cuore dell’alta Valsesia, ai piedi del Monte Rosa.',
   },
   rafting: {
     title: 'Rafting in Valsesia sul fiume Sesia — Eddyline',
     description:
-      'Discesa di rafting tra rapide e acque smeraldo, adatta a tutti. Guide certificate FiRaft, attrezzatura inclusa. A 2 ore da Milano e Torino.',
+      'Discesa di rafting tra rapide e acque smeraldo, adatta a tutti. Guide certificate FiRaft, attrezzatura inclusa. Nel cuore dell’alta Valsesia.',
   },
   canyoning: {
     title: 'Canyoning in Valsesia — Eddyline',
@@ -65,22 +65,22 @@ const { title, description } = meta[activity];
   <!-- Selettore a card: swap senza reload (§7.5) -->
   <ActivitySwitcher activity={activity} />
 
-  <!-- Permanente (§7.4) -->
-  <PercheEddyline />
+  <!-- Perché Eddyline — per attività (§7.4) -->
+  <PercheEddyline activity={activity} />
 
   <!-- Attività: pannelli rafting/canyoning commutati dal controller -->
   <Esperienza activity={activity} />
   <Percorsi activity={activity} />
 
-  <!-- Permanenti: fiducia e prova sociale (§7.8 / §7.9) -->
-  <Sicurezza />
+  <!-- Sicurezza per attività (§7.8) + recensioni permanenti (§7.9) -->
+  <Sicurezza activity={activity} />
   <Recensioni />
 
   <!-- Cuore conversione: Calendly + form (§7.11 / §9) -->
   <BookingBlock activity={activity} />
 
-  <!-- FAQ dopo il form (richiesta Angela): mobile + desktop (§7.10) -->
-  <Faq />
+  <!-- FAQ per attività, dopo il form (richiesta Angela): mobile + desktop (§7.10) -->
+  <Faq activity={activity} />
 
   <!-- Come arrivare / la base + mappa (§7.12) -->
   <ComeArrivare />

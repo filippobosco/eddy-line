@@ -118,8 +118,10 @@ const { logoUrl } = config.assets;
     gap: 0.5rem;
   }
 
+  /* Switch attività: visibile ANCHE su mobile (la scelta dev'essere chiara
+     su telefono). Compatto a mobile; respira da 720px in su. */
   .hdr-switch {
-    display: none;
+    display: inline-flex;
     background: var(--foam-soft);
     border-radius: var(--radius-pill);
     padding: 3px;
@@ -127,12 +129,13 @@ const { logoUrl } = config.assets;
   }
   .hdr-switch__opt {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
+    font-size: 0.66rem;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
     text-decoration: none;
+    white-space: nowrap;
     color: var(--stone-mute);
-    padding: 0.4rem 0.8rem;
+    padding: 0.38rem 0.6rem;
     border-radius: var(--radius-pill);
     transition: background-color var(--dur-fast) var(--ease-out),
       color var(--dur-fast) var(--ease-out);
@@ -167,12 +170,21 @@ const { logoUrl } = config.assets;
     padding: 0.6rem 1.1rem;
     font-size: 0.95rem;
   }
+  /* Su mobile nascondiamo "Prenota" nell'header per far posto allo switch:
+     la CTA è sempre presente nella sticky bar in basso + nel pop-up. */
+  .hdr-cta {
+    display: none;
+  }
+  /* Logo un filo più compatto su mobile per non competere con lo switch */
+  .site-header__logo {
+    height: 30px;
+  }
 
   @media (min-width: 720px) {
-    .hdr-switch {
+    .hdr-icon--call {
       display: inline-flex;
     }
-    .hdr-icon--call {
+    .hdr-cta {
       display: inline-flex;
     }
     .site-header__logo {

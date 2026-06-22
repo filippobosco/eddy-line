@@ -1,61 +1,75 @@
 ---
 /**
- * Sicurezza & guide (§7.8) — permanente.
- * Blocco fiducia che gestisce l'obiezione "è pericoloso?". Fondo scuro
- * (granite) per dare peso/serietà, con la linea di corrente come accento.
- * Loghi enti: slot pronti in /public (CONI, FICK, FIRAFT, FICT) — finché non
- * arrivano i file, mostriamo i nomi come badge mono.
+ * Sicurezza & guide (§7.8) — PER ATTIVITÀ.
+ * Renderizza ENTRAMBE le varianti in [data-activity-pane]; il controller
+ * activitySwap mostra quella attiva. Contenuti distinti rafting/canyoning
+ * (FiRaft vs AIGC, punti e riconoscimenti diversi). Fondo scuro (granite).
  */
-import { sicurezza } from '../data/content';
+import { sicurezzaByActivity } from '../data/content';
+import type { Activity } from '../data/content';
 import CurrentLine from './CurrentLine.astro';
+
+interface Props {
+  activity: Activity | 'neutral';
+}
+const { activity } = Astro.props;
+const initial: Activity = activity === 'canyoning' ? 'canyoning' : 'rafting';
+const activities: Activity[] = ['rafting', 'canyoning'];
 ---
 
 <section class="sic section" id="sicurezza" aria-labelledby="sic-title">
   <div class="container">
-    <div class="sic__grid">
-      <div class="sic__intro reveal">
-        <p class="eyebrow sic__eyebrow">È PERICOLOSO? NO, È METODO</p>
-        <h2 class="sic__title" id="sic-title">{sicurezza.title}</h2>
-        <CurrentLine variant="underline" animate={true} class="sic__underline" />
-        <p class="sic__lead">{sicurezza.intro}</p>
-      </div>
+    {
+      activities.map((act) => {
+        const data = sicurezzaByActivity[act];
+        return (
+          <div data-activity-pane={act} hidden={act !== initial}>
+            <div class="sic__grid">
+              <div class="sic__intro reveal">
+                <p class="eyebrow sic__eyebrow">È PERICOLOSO? NO, È METODO</p>
+                <h2 class="sic__title" id={act === initial ? 'sic-title' : undefined}>
+                  {data.title}
+                </h2>
+                <CurrentLine variant="underline" animate={true} class="sic__underline" />
+                <p class="sic__lead">{data.intro}</p>
+              </div>
 
-      <ul class="sic__points">
-        {
-          sicurezza.points.map((p) => (
-            <li class="sic__point reveal">
-              <span class="sic__check" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="20" height="20">
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </span>
-              <span>{p}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
+              <ul class="sic__points">
+                {data.points.map((p) => (
+                  <li class="sic__point reveal">
+                    <span class="sic__check" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2.4"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    </span>
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-    <!-- Loghi enti (slot /public). Placeholder: nomi come badge. -->
-    <div class="sic__enti reveal" aria-label="Enti e federazioni">
-      <span class="sic__enti-label">Riconoscimenti & federazioni</span>
-      <ul class="sic__enti-list">
-        {
-          sicurezza.enti.map((ente) => (
-            <li class="sic__ente tag-mono" data-logo-slot={ente}>
-              {ente}
-            </li>
-          ))
-        }
-      </ul>
-    </div>
+            {/* Loghi enti (slot /public). Placeholder: nomi come badge. */}
+            <div class="sic__enti reveal" aria-label="Enti e federazioni">
+              <span class="sic__enti-label">Riconoscimenti & federazioni</span>
+              <ul class="sic__enti-list">
+                {data.enti.map((ente) => (
+                  <li class="sic__ente tag-mono" data-logo-slot={ente}>
+                    {ente}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        );
+      })
+    }
   </div>
 </section>
 

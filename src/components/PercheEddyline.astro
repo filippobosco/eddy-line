@@ -1,34 +1,50 @@
 ---
 /**
- * Perché Eddyline (§7.4) — permanente.
- * 4 value prop a icone, scansionabili.
+ * Perché Eddyline (§7.4) — PER ATTIVITÀ.
+ * Renderizza ENTRAMBE le varianti in [data-activity-pane]; il controller
+ * activitySwap mostra quella attiva. Contenuti distinti rafting/canyoning
+ * (richiesta cliente: non mescolare le info delle attività).
  */
-import { valueProps } from '../data/content';
+import { valuePropsByActivity, percheTitle } from '../data/content';
+import type { Activity } from '../data/content';
 import Icon from './Icon.astro';
 import CurrentLine from './CurrentLine.astro';
+
+interface Props {
+  activity: Activity | 'neutral';
+}
+const { activity } = Astro.props;
+const initial: Activity = activity === 'canyoning' ? 'canyoning' : 'rafting';
+const activities: Activity[] = ['rafting', 'canyoning'];
 ---
 
 <section class="perche section" aria-labelledby="perche-title">
   <div class="container">
-    <div class="perche__head reveal">
-      <p class="eyebrow">PERCHÉ EDDYLINE</p>
-      <h2 class="perche__title" id="perche-title">Vent’anni di Sesia, fatti bene</h2>
-      <CurrentLine variant="underline" animate={true} class="perche__underline" />
-    </div>
+    {
+      activities.map((act) => (
+        <div data-activity-pane={act} hidden={act !== initial}>
+          <div class="perche__head reveal">
+            <p class="eyebrow">PERCHÉ EDDYLINE</p>
+            <h2 class="perche__title" id={act === initial ? 'perche-title' : undefined}>
+              {percheTitle[act]}
+            </h2>
+            <CurrentLine variant="underline" animate={true} class="perche__underline" />
+          </div>
 
-    <ul class="perche__grid">
-      {
-        valueProps.map((vp) => (
-          <li class="vprop reveal">
-            <span class="vprop__icon" aria-hidden="true">
-              <Icon name={vp.icon as any} size={26} />
-            </span>
-            <h3 class="vprop__title">{vp.title}</h3>
-            <p class="vprop__body">{vp.body}</p>
-          </li>
-        ))
-      }
-    </ul>
+          <ul class="perche__grid">
+            {valuePropsByActivity[act].map((vp) => (
+              <li class="vprop reveal">
+                <span class="vprop__icon" aria-hidden="true">
+                  <Icon name={vp.icon as any} size={26} />
+                </span>
+                <h3 class="vprop__title">{vp.title}</h3>
+                <p class="vprop__body">{vp.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
   </div>
 </section>
 

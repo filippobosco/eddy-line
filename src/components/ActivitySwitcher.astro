@@ -112,7 +112,7 @@ const initialActivity: Activity = activity === 'canyoning' ? 'canyoning' : 'raft
                 </span>
               </div>
               <div class="confirm__body">
-                <p class="eyebrow">SEI SUL SESIA GIUSTO</p>
+                <p class="eyebrow">{act === 'rafting' ? 'RAFTING SUL SESIA' : 'CANYONING IN VALSESIA'}</p>
                 <h2
                   class="confirm__title"
                   id={!isNeutral && act === initialActivity ? 'switcher-title' : undefined}
@@ -133,6 +133,29 @@ const initialActivity: Activity = activity === 'canyoning' ? 'canyoning' : 'raft
                     </a>
                   )}
                 </div>
+
+                {/* Ponte discreto verso l'altra attività (non rompe l'imbuto:
+                    l'attività d'ingresso resta protagonista). Riusa il click
+                    della card in-flow → swap senza reload + URL aggiornato. */}
+                <button
+                  type="button"
+                  class="confirm__other"
+                  data-activity-card={act === 'rafting' ? 'canyoning' : 'rafting'}
+                >
+                  {act === 'rafting'
+                    ? 'Cerchi il canyoning? Passa al canyoning'
+                    : 'Preferisci il rafting? Passa al rafting'}
+                  <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M5 12h14M13 6l6 6-6 6"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -292,6 +315,28 @@ const initialActivity: Activity = activity === 'canyoning' ? 'canyoning' : 'raft
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+  }
+  /* Ponte verso l'altra attività: link testuale discreto, non compete con le CTA */
+  .confirm__other {
+    margin-top: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--sesia-deep);
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .confirm__other:hover {
+    color: var(--sesia-bright);
+    border-bottom-color: currentColor;
   }
 
   @media (min-width: 760px) {
