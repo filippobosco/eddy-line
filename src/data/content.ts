@@ -39,7 +39,7 @@ export const heroCanyoning: HeroState = {
   eyebrow: 'EDDYLINE · DAL 2001 IN VALSESIA',
   h1: 'Canyoning in Valsesia',
   sub: 'Salti, scivoli naturali e calate tra le forre del Sesia. Un percorso per ogni livello, dal primo approccio agli itinerari avanzati. Guide Canyon certificate AIGC, muta e attrezzatura incluse.',
-  tagMono: '9 percorsi · da €70 · ti aiutiamo a scegliere',
+  tagMono: '9 percorsi · da €60 · ti aiutiamo a scegliere',
   ctaPrimary: { label: 'Trova il percorso adatto', target: '#prenota' },
   ctaSecondary: { label: 'Prenota la tua data', target: '#prenota' },
 };
@@ -144,7 +144,7 @@ export const activityCards: ActivityCard[] = [
   {
     activity: 'canyoning',
     title: 'Canyoning in Valsesia',
-    tag: 'da €70',
+    tag: 'da €60',
     blurb: 'Per ogni livello, dal base all’avanzato.',
   },
 ];
@@ -433,7 +433,7 @@ export const faqsByActivity: Record<Activity, Faq[]> = {
     },
     {
       q: 'Qual è il periodo migliore?',
-      a: 'Il canyoning ha bisogno di acqua. In primavera, fino a fine maggio circa, si fanno i percorsi che in estate hanno pochissima acqua. Da giugno si inizia con i percorsi più acquatici e ludici come il Sorba e a seguire l’Artogna. Periodo top luglio e agosto (pozze fresche e tuffi), ma anche settembre.',
+      a: 'Il canyoning ha bisogno di poca acqua. In primavera, fino a fine maggio circa, si fanno i percorsi che in estate hanno pochissima acqua. Da giugno si inizia con i percorsi più acquatici e ludici come il Sorba e a seguire l’Artogna. Periodo top luglio e agosto (pozze fresche e tuffi), ma anche settembre.',
     },
     {
       q: 'Chi mi accompagna?',
