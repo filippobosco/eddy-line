@@ -1,0 +1,181 @@
+---
+/**
+ * Thank-you page riutilizzabile — conferma post-conversione.
+ * Usata da /grazie (form) e /grazie-prenotazione (Calendly).
+ * On-brand (header+footer, linea di corrente), noindex.
+ * Al load pusha un evento conversione sul dataLayer, così GTM può tracciare
+ * la conversione anche via pageview della pagina (oltre che via evento).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import CurrentLine from './CurrentLine.astro';
+import config from '../config';
+import { contacts } from '../data/content';
+
+interface Props {
+  /** 'form' = richiesta info; 'booking' = prenotazione Calendly. */
+  variant: 'form' | 'booking';
+}
+const { variant } = Astro.props;
+
+const copy = {
+  form: {
+    title: 'Eddyline — Richiesta inviata',
+    eyebrow: 'RICHIESTA RICEVUTA',
+    h1: 'Grazie! Ti ricontattiamo a breve.',
+    lead:
+      'Abbiamo ricevuto la tua richiesta di informazioni. Ti risponderemo il prima possibile con tutti i dettagli. Se hai fretta, scrivici pure direttamente.',
+    // evento dataLayer per GTM/Ads
+    event: 'lead_thank_you',
+  },
+  booking: {
+    title: 'Eddyline — Prenotazione ricevuta',
+    eyebrow: 'PRENOTAZIONE RICEVUTA',
+    h1: 'Grazie! La tua richiesta di data è arrivata.',
+    lead:
+      'Abbiamo ricevuto la tua richiesta di prenotazione. Lo staff la conferma di persona e ti scrive per gli ultimi dettagli. A presto sul Sesia!',
+    event: 'booking_thank_you',
+  },
+}[variant];
+
+const { calendlyRaftingUrl } = config.integrations;
+---
+
+<BaseLayout title={copy.title} description={copy.h1} activity="neutral">
+  <Header slot="header" activity="neutral" />
+  <Footer slot="footer" />
+
+  <section class="ty">
+    <div class="container container-narrow ty__inner">
+      <span class="ty__check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="40" height="40">
+          <path
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M4 12.5l5 5L20 6.5"
+          ></path>
+        </svg>
+      </span>
+
+      <p class="eyebrow ty__eyebrow">{copy.eyebrow}</p>
+      <h1 class="ty__title">{copy.h1}</h1>
+      <CurrentLine variant="underline" class="ty__underline" />
+      <p class="ty__lead">{copy.lead}</p>
+
+      <!-- Contatti rapidi -->
+      <div class="ty__contacts">
+        <a
+          class="btn btn-primary"
+          href={contacts.whatsapp}
+          target="_blank"
+          rel="noopener"
+          data-track="whatsapp_click"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path
+              fill="currentColor"
+              d="M12.04 2c-5.46 0-9.9 4.43-9.9 9.9 0 1.74.46 3.45 1.32 4.95L2 22l5.3-1.38a9.86 9.86 0 0 0 4.73 1.2h.01c5.46 0 9.9-4.43 9.9-9.9 0-2.65-1.03-5.13-2.9-7C17.18 3.03 14.7 2 12.05 2Zm5.8 14.13c-.24.68-1.42 1.32-1.95 1.36-.5.06-1.13.08-1.83-.11a16.7 16.7 0 0 1-1.66-.61c-2.92-1.26-4.82-4.2-4.97-4.4-.14-.2-1.2-1.6-1.2-3.04 0-1.45.76-2.16 1.03-2.46.27-.3.59-.37.78-.37l.56.01c.18.01.42-.07.66.5.24.59.83 2.04.9 2.19.07.15.12.32.02.51-.1.2-.15.32-.3.49-.14.18-.3.4-.43.53-.14.15-.29.3-.12.6.17.29.74 1.22 1.59 1.98 1.1.98 2.02 1.28 2.31 1.43.29.15.46.12.63-.07.17-.2.73-.85.92-1.14.2-.29.39-.24.66-.15.27.1 1.71.81 2 .96.29.15.49.22.56.34.07.12.07.69-.17 1.36Z"
+            ></path>
+          </svg>
+          Scrivici su WhatsApp
+        </a>
+        <a class="btn btn-secondary" href={contacts.phoneHref} data-track="call_click">
+          Chiama {contacts.phoneDisplay}
+        </a>
+      </div>
+
+      <!-- Se è la thank-you del FORM, invitiamo a prenotare (conversione primaria) -->
+      {
+        variant === 'form' && (
+          <p class="ty__nudge">
+            Vuoi bloccare subito una data?{' '}
+            <a class="ty__link" href={calendlyRaftingUrl} target="_blank" rel="noopener">
+              Prenota ora
+            </a>
+          </p>
+        )
+      }
+
+      <a class="ty__back" href="/">← Torna alla pagina</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<!-- Conversione per GTM: evento al load della thank-you page -->
+<script is:inline define:vars={{ conversionEvent: copy.event }}>
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event: conversionEvent });
+</script>
+
+<style>
+  .ty {
+    /* Occupa lo spazio tra header e footer, centrato */
+    min-height: calc(100svh - var(--header-h));
+    display: flex;
+    align-items: center;
+    padding-block: clamp(3rem, 10vh, 6rem);
+    background:
+      radial-gradient(120% 80% at 50% 0%, var(--sesia-bright-15) 0%, transparent 55%),
+      var(--foam);
+  }
+  .ty__inner {
+    text-align: center;
+  }
+  .ty__check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: var(--sesia-bright);
+    color: var(--white);
+    box-shadow: 0 10px 30px rgba(22, 184, 160, 0.35);
+    margin-bottom: 1.5rem;
+  }
+  .ty__title {
+    font-size: var(--step-4);
+    max-width: 20ch;
+    margin-inline: auto;
+  }
+  .ty__underline {
+    margin: 0.75rem auto 0;
+  }
+  .ty__lead {
+    margin: 1.25rem auto 0;
+    max-width: 52ch;
+    font-size: var(--step-1);
+    color: var(--text-mute);
+    line-height: 1.55;
+  }
+  .ty__contacts {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+  }
+  .ty__nudge {
+    margin-top: 1.5rem;
+    color: var(--text-mute);
+  }
+  .ty__link {
+    color: var(--sesia-deep);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+  .ty__back {
+    display: inline-block;
+    margin-top: 2rem;
+    color: var(--stone-mute);
+    text-decoration: none;
+    font-size: var(--step--1);
+  }
+  .ty__back:hover {
+    color: var(--sesia-deep);
+  }
+</style>

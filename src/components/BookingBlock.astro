@@ -412,8 +412,12 @@ const calendlyUrl: Record<Activity, string> = {
         const out = await res.json().catch(() => ({}));
         if (res.ok && out.ok) {
           form.reset();
-          if (okMsg) okMsg.hidden = false;
+          // Evento backup (la conversione vera si traccia sulla pageview /grazie)
           dl().push({ event: 'form_submit', activity: payload.attivita });
+          // Redirect alla thank-you page (tracking + UX). activity in query per GA4.
+          const q = payload.attivita ? '?activity=' + encodeURIComponent(payload.attivita) : '';
+          window.location.assign('/grazie' + q);
+          return;
         } else if (out.errors) {
           Object.entries(out.errors).forEach(([k, v]) => showFieldError(k, String(v)));
         } else {
