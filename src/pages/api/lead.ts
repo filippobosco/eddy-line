@@ -90,10 +90,15 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
+    // Nota: le Web App di Google Apps Script rispondono con un redirect 302
+    // verso script.googleusercontent.com; fetch (Node) lo segue in automatico
+    // e la scrittura sul foglio avviene comunque. Consideriamo riuscito
+    // qualunque esito 2xx dopo il redirect.
     const res = await fetch(webhook, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(lead),
+      redirect: 'follow',
     });
     if (!res.ok) {
       return json({ ok: false, error: 'Invio non riuscito. Riprova tra poco.' }, 502);
