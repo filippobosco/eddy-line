@@ -39,7 +39,9 @@ const copy = {
   },
 }[variant];
 
-const { calendlyRaftingUrl } = config.integrations;
+// Entrambi gli URL Calendly: la scelta corretta avviene client-side leggendo
+// ?activity= (la thank-you è statica, non conosce l'attività a build time).
+const { calendlyRaftingUrl, calendlyCanyoningUrl } = config.integrations;
 ---
 
 <BaseLayout title={copy.title} description={copy.h1} activity="neutral">
@@ -88,12 +90,22 @@ const { calendlyRaftingUrl } = config.integrations;
         </a>
       </div>
 
-      <!-- Se è la thank-you del FORM, invitiamo a prenotare (conversione primaria) -->
+      <!-- Se è la thank-you del FORM, invitiamo a prenotare (conversione primaria).
+           href default = rafting (funziona senza JS); lo script sotto lo corregge
+           in base a ?activity= così punta al Calendly dell'attività giusta. -->
       {
         variant === 'form' && (
           <p class="ty__nudge">
             Vuoi bloccare subito una data?{' '}
-            <a class="ty__link" href={calendlyRaftingUrl} target="_blank" rel="noopener">
+            <a
+              class="ty__link"
+              href={calendlyRaftingUrl}
+              target="_blank"
+              rel="noopener"
+              data-book-link
+              data-url-rafting={calendlyRaftingUrl}
+              data-url-canyoning={calendlyCanyoningUrl}
+            >
               Prenota ora
             </a>
           </p>
@@ -105,10 +117,26 @@ const { calendlyRaftingUrl } = config.integrations;
   </section>
 </BaseLayout>
 
-<!-- Conversione per GTM: evento al load della thank-you page -->
+<!-- Conversione per GTM + correzione link Calendly per attività -->
 <script is:inline define:vars={{ conversionEvent: copy.event }}>
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({ event: conversionEvent });
+  (function () {
+    // Attività dalla query (?activity=rafting|canyoning), passata dal form.
+    var activity = new URLSearchParams(location.search).get('activity');
+    activity = activity === 'canyoning' ? 'canyoning' : activity === 'rafting' ? 'rafting' : '';
+
+    // Evento conversione (con activity per segmentare in GA4, se presente).
+    window.dataLayer = window.dataLayer || [];
+    var payload = { event: conversionEvent };
+    if (activity) payload.activity = activity;
+    window.dataLayer.push(payload);
+
+    // "Prenota ora": punta al Calendly dell'attività lasciata nel form.
+    var link = document.querySelector('[data-book-link]');
+    if (link && activity) {
+      var url = link.getAttribute('data-url-' + activity);
+      if (url) link.setAttribute('href', url);
+    }
+  })();
 </script>
 
 <style>
