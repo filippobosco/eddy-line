@@ -62,8 +62,8 @@ export const config: AppConfig = {
       env.PUBLIC_CALENDLY_CANYONING_URL ?? 'https://calendly.com/PLACEHOLDER/canyoning',
     // §9.2 — placeholder, endpoint form n8n
     n8nWebhookUrl: env.N8N_WEBHOOK_URL ?? 'https://PLACEHOLDER.n8n.cloud/webhook/eddyline',
-    // §9.3 — placeholder (oppure riuso GTM-TRQM2W9H)
-    gtmContainerId: env.PUBLIC_GTM_CONTAINER_ID ?? 'GTM-XXXXXXX',
+    // §9.3 — container GTM della landing
+    gtmContainerId: env.PUBLIC_GTM_CONTAINER_ID ?? 'GTM-55ZJ7TMT',
   },
 
   assets: {
