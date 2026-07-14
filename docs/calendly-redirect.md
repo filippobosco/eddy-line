@@ -1,8 +1,24 @@
 # Calendly → thank-you page `/grazie-prenotazione`
 
-Le prenotazioni Calendly devono reindirizzare alla thank-you page dedicata, così
-la conversione si traccia in GTM/Ads come **pageview di `/grazie-prenotazione`**
+Le prenotazioni Calendly reindirizzano alla thank-you page dedicata, così la
+conversione si traccia in GTM/Ads come **pageview di `/grazie-prenotazione`**
 (oltre all'evento `calendly_event_scheduled` già emesso dal sito).
+
+## IMPORTANTE — il redirect lo fa IL SITO, non Calendly
+
+L'embed Calendly vive in un **iframe**: il redirect impostato dentro Calendly
+avverrebbe *dentro* l'iframe (invisibile all'utente). Per questo il sito ascolta
+l'evento `calendly.event_scheduled` (listener in `BookingBlock.astro`) e
+reindirizza la **pagina intera** a `/grazie-prenotazione?activity=...`.
+
+Conseguenze:
+- **Funziona con qualsiasi piano Calendly** (anche gratuito): non dipende dal
+  redirect di Calendly.
+- Il redirect impostato in Calendly (sotto) diventa **facoltativo**: serve solo
+  a chi apre il link Calendly DIRETTO (fuori dal sito). Se lo lasci, mettici lo
+  stesso URL `/grazie-prenotazione`; se lo togli, dal sito funziona comunque.
+
+## (Facoltativo) Redirect nativo Calendly — per il link diretto
 
 ## Come impostarlo (per ENTRAMBI gli eventi: rafting e canyoning)
 

@@ -312,7 +312,10 @@ const calendlyUrl: Record<Activity, string> = {
     if (cal) observeCalendly(cal);
   });
 
-  // ---- Calendly event_scheduled → dataLayer ----
+  // ---- Calendly event_scheduled → dataLayer + redirect thank-you ----
+  // NB: il redirect impostato in Calendly avviene DENTRO l'iframe dell'embed
+  // (quindi invisibile). Lo gestiamo noi qui, reindirizzando la pagina INTERA
+  // alla thank-you dedicata. Funziona con qualsiasi piano Calendly.
   window.addEventListener('message', (e) => {
     if (e.origin.indexOf('calendly.com') === -1) return;
     const data = (e as MessageEvent).data;
@@ -323,6 +326,11 @@ const calendlyUrl: Record<Activity, string> = {
       );
       const activity = (activePane?.dataset.activityPane as Activity) || 'rafting';
       dl().push({ event: 'calendly_event_scheduled', activity });
+      // Piccolo ritardo: lascia a GTM/dataLayer il tempo di processare l'evento
+      // di conversione prima di cambiare pagina.
+      window.setTimeout(() => {
+        window.location.assign('/grazie-prenotazione?activity=' + encodeURIComponent(activity));
+      }, 400);
     }
   });
 
