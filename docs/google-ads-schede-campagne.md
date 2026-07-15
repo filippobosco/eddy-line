@@ -120,6 +120,89 @@ Keyword:
 
 ---
 
+---
+
+## RSA — ANNUNCI (titoli ≤30 caratteri, descrizioni ≤90). 📌 = pin posizione 1
+
+Regole: min 8-10 titoli per RSA, 4 descrizioni. Pinnare in pos.1 solo i 2-3
+titoli con keyword+luogo (lasciare a Google gli altri). Prezzo incluso per
+qualificare il clic (rafting da 55€, canyoning da 60€).
+
+### RAFTING · AG1 Core Sesia/Valsesia — URL /rafting
+**Titoli:**
+1. 📌 Rafting sul Fiume Sesia (24)
+2. 📌 Rafting in Valsesia (20)
+3. Guide Certificate FiRaft (23)
+4. Rafting da 55€ a Persona (24)
+5. Adatto Anche ai Principianti (28)
+6. Nessuna Esperienza Richiesta (28)
+7. Attrezzatura Inclusa (20)
+8. Da 25 Anni sul Sesia (20)
+9. 4,6/5 su TripAdvisor (21)
+10. Acque Smeraldo del Sesia (24)
+11. Prenoti Online in 2 Minuti (26)
+12. Nel Cuore dell'Alta Valsesia (28)
+**Descrizioni:**
+1. Discesa tra rapide e acque smeraldo, adatta a tutti. Nessuna esperienza richiesta. (86)
+2. Guide certificate FiRaft e attrezzatura inclusa. Prenoti online in pochi minuti. (81)
+3. Da 25 anni sul Sesia, 4,6/5 su TripAdvisor. Massima sicurezza, sempre. (70)
+4. Scegli la tua data e prenota. Nel cuore dell'alta Valsesia, ai piedi del Monte Rosa. (85)
+
+### RAFTING · AG2 Regione/Città — URL /rafting
+**Titoli:** 📌 Rafting in Piemonte · 📌 Rafting sul Fiume Sesia · Guide Certificate FiRaft ·
+Rafting da 55€ a Persona · Adatto Anche ai Principianti · Attrezzatura Inclusa ·
+Da 25 Anni sul Sesia · 4,6/5 su TripAdvisor · A 2 Ore da Torino · Prenoti Online Subito ·
+Acque Smeraldo del Sesia · Avventura per Tutti
+**Descrizioni:** (come AG1, aggiungere: "Facile da raggiungere dal Piemonte, a 2 ore da Torino.")
+
+### RAFTING · AG3 Prossimità/Lombardia — URL /rafting
+**Titoli:** 📌 Rafting Vicino a Te · 📌 Rafting sul Fiume Sesia · Il Fiume a 2 Ore da Milano ·
+Guide Certificate FiRaft · Rafting da 55€ a Persona · Adatto a Tutti, Anche Novizi ·
+Attrezzatura Inclusa · 4,6/5 su TripAdvisor · Prenoti Online in 2 Minuti · Da 25 Anni sul Sesia
+**Descrizioni:** (la distanza diventa argomento n.1)
+1. A 2 ore da Milano, nel cuore della Valsesia: rapide e acque smeraldo ti aspettano. (84)
+2. Guide certificate FiRaft, attrezzatura inclusa, adatto a tutti. Prenoti online. (79)
+3. Da 25 anni sul Sesia, 4,6/5 su TripAdvisor. Nessuna esperienza richiesta. (73)
+4. Scegli la data e prenota in pochi minuti. Un'avventura vicino a te. (66)
+
+### RAFTING · AG4 Soft/Famiglie — URL /rafting
+**Titoli:** 📌 Rafting in Famiglia · 📌 Rafting per Bambini · Percorsi Adatti ai Più Piccoli ·
+Sicurezza Prima di Tutto · Guide Certificate FiRaft · Attrezzatura su Misura Inclusa ·
+Avventura per la Famiglia · Rafting da 55€ · 4,6/5 su TripAdvisor · Battesimo Fluviale
+**Descrizioni:**
+1. Percorsi pensati per i più piccoli, con guide esperte e attrezzatura su misura. (80)
+2. Avventura sicura per tutta la famiglia. Chiamaci e scegliamo insieme il percorso. (82)
+3. Il battesimo fluviale: il modo più dolce di scoprire il Sesia coi bambini. (74)
+4. Da 25 anni sul Sesia, 4,6/5 su TripAdvisor. Prenoti online in pochi minuti. (75)
+
+### CANYONING · AG1 Core — URL /canyoning
+**Titoli:**
+1. 📌 Canyoning in Valsesia (22)
+2. 📌 Canyoning in Piemonte (22)
+3. Torrentismo sul Sesia (21)
+4. Guide Canyon Certificate AIGC (29)
+5. Canyoning da 60€ a Persona (26)
+6. Dal Principiante all'Esperto (27)
+7. Salti, Scivoli e Cascate (24)
+8. Muta e Attrezzatura Incluse (27)
+9. 4,6/5 su TripAdvisor (21)
+10. Pozze Cristalline del Sesia (27)
+11. Prima Volta? Ti Guidiamo Noi (28)
+12. Nel Cuore dell'Alta Valsesia (28)
+**Descrizioni:**
+1. Forre nella roccia, pozze cristalline e salti adatti al tuo livello. Muta inclusa. (84)
+2. Prima volta? Il percorso base non richiede esperienza. Ti consigliamo noi. (74)
+3. Solo Guide Canyon certificate AIGC. Massima sicurezza, attrezzatura inclusa. (77)
+4. Dal Rio Sorba ai percorsi expert. Scegli e prenota, nell'alta Valsesia. (72)
+
+### CANYONING · AG2 Città/Prossimità — URL /canyoning
+**Titoli:** 📌 Canyoning in Piemonte · 📌 Canyoning in Valsesia · Torrentismo sul Sesia ·
+Guide Canyon AIGC · Canyoning da 60€ · Dal Base all'Esperto · Muta e Attrezzatura Incluse ·
+4,6/5 su TripAdvisor · Prima Volta? Ti Guidiamo · Salti, Scivoli e Cascate
+**Descrizioni:** (come AG1)
+
+---
+
 ## Note di implementazione
 - All'avvio Google chiede almeno 1 keyword + 1 annuncio per salvare l'ad group:
   inserisci le keyword sopra e gli RSA (blocco successivo, in questo stesso doc).
