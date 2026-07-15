@@ -286,15 +286,16 @@ import { contacts } from '../data/content';
       });
     }
 
-    // Se esiste già una scelta, riapplica (per Consent Mode su nuove pagine) e non mostrare
+    // Il RIPRISTINO del consenso da scelta precedente avviene inline nel
+    // BaseLayout (prima di GTM), non qui: uno script di modulo girerebbe troppo
+    // tardi e GA4 partirebbe in denied. Qui mostriamo il banner solo se non
+    // esiste ancora una scelta salvata.
     let stored: { analytics?: boolean; marketing?: boolean } | null = null;
     try {
       stored = JSON.parse(localStorage.getItem(KEY) || 'null');
     } catch (e) {}
 
-    if (stored && typeof stored.analytics === 'boolean') {
-      applyConsent(!!stored.analytics, !!stored.marketing);
-    } else {
+    if (!stored || typeof stored.analytics !== 'boolean') {
       show();
     }
 

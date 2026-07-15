@@ -72,6 +72,22 @@ const initialActivity = activity === 'neutral' ? 'rafting' : activity;
         analytics_storage: 'denied',
         wait_for_update: 500,
       });
+
+      /* Ripristino consenso da scelta precedente — DEVE avvenire qui, inline e
+         PRIMA di GTM, altrimenti sulle pagine successive (es. /grazie) GA4 si
+         inizializza in "denied" e sopprime gli eventi di conversione.
+         (Il banner gestisce solo la PRIMA scelta e l'UI.) */
+      try {
+        var _cc = JSON.parse(localStorage.getItem('eddyline_consent') || 'null');
+        if (_cc && typeof _cc.analytics === 'boolean') {
+          gtag('consent', 'update', {
+            analytics_storage: _cc.analytics ? 'granted' : 'denied',
+            ad_storage: _cc.marketing ? 'granted' : 'denied',
+            ad_user_data: _cc.marketing ? 'granted' : 'denied',
+            ad_personalization: _cc.marketing ? 'granted' : 'denied',
+          });
+        }
+      } catch (e) {}
     </script>
 
     <!-- §5.5 — activity_selected all'ingresso -->
