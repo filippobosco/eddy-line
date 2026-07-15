@@ -21,3 +21,6 @@ pnpm-debug.log*
 
 # astro
 .astro/
+
+# Materiale di lavoro (piani Ads, keyword, RSA, script) — non parte del sito
+docs/
